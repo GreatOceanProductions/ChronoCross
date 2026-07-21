@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T05:55:00+00:00",
-  "last_loop_completed": "2026-07-21T05:55:00+00:00",
-  "total_loops_completed": 34,
+  "last_updated": "2026-07-21T06:30:00+00:00",
+  "last_loop_completed": "2026-07-21T06:30:00+00:00",
+  "total_loops_completed": 35,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1163,15 +1163,9 @@
   },
   "tdd_cron": {
     "last_status": "authored_test",
-    "last_action": "TDD cycle 34: authored 'test_determinism_prng_seeded' → 27/27 pass (commit 34aa84f). test_queue advanced to next item: test_character_data_loads",
-    "last_run_at": "2026-07-21T05:55:00+00:00",
+    "last_action": "TDD cycle 35: authored 'test_character_data_loads' -> 34/34 pass (commit 8085a0d). test_queue advanced to next item: test_tech_data_loads",
+    "last_run_at": "2026-07-21T06:30:00+00:00",
     "test_queue": [
-      {
-        "name": "test_character_data_loads",
-        "target_file": "game/tests/test_character_data.py",
-        "expected_failure": "CharacterData.gd missing / fails to load data/characters/serge.json",
-        "spec_ref": "§15.4 step 1 (scaffold order), §6.5 schema-validated data layer"
-      },
       {
         "name": "test_tech_data_loads",
         "target_file": "game/tests/test_tech_data.py",
@@ -1197,13 +1191,19 @@
         "target_file": "game/tests/test_determinism.py",
         "commit": "34aa84f",
         "passed_at": "2026-07-21T05:55:00+00:00"
+      },
+      {
+        "name": "test_character_data_loads",
+        "target_file": "game/tests/test_character_data.py",
+        "commit": "8085a0d",
+        "passed_at": "2026-07-21T06:30:00+00:00"
       }
     ],
-    "current_test_focus": "test_character_data_loads",
-    "last_test_authored": "test_determinism_prng_seeded",
-    "cycle_count": 3,
+    "current_test_focus": "test_tech_data_loads",
+    "last_test_authored": "test_character_data_loads",
+    "cycle_count": 4,
     "last_run_action": "authored test + green",
-    "last_run_completed": "2026-07-21T05:55:00+00:00"
+    "last_run_completed": "2026-07-21T06:30:00+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",

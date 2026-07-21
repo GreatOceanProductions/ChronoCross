@@ -1,3 +1,4 @@
+bash.exe: warning: could not find /tmp, please create!
 # Loop Memory — Remaster Engine Design Spec
 
 Cumulative memory across cron loops. Each loop appends to this file. Future loops read this to maintain continuity.
@@ -1097,3 +1098,100 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - Git: commit `34aa84f` on `main`. Prior-loop housekeeping still uncommitted (separate bookkeeping commit will follow).
 
 **The TDD loop has produced its first authored test. The next loop (cycle 35) will pick `test_character_data_loads` from the queue.**
+
+---
+
+## 2026-07-21 — TDD cycle 35: test_character_data_loads — PASSING
+
+**What I did this loop:**
+- Authored `game/tests/test_character_data.py` (7 tests) — RED phase.
+- Confirmed the test failed for the right reason: `ModuleNotFoundError: No module named 'character_data'` (matches the queue's `expected_failure: "CharacterData.gd missing / fails to load data/characters/serge.json"`).
+- Authored `game/tools/character_data.py` — minimal `CharacterData` class mirroring the future GDScript `CharacterData.gd` Resource. Python-side typed loader; the GDScript version is a separate `scaffolding_cron` item. GREEN phase.
+- Ran full test suite: **34/34 pass** (27 prior + 7 new) in 1.52s.
+- Committed: `8085a0d test: CharacterData typed loader for character JSON (§7.3, §15.4 step 1)`.
+- Updated `loop_state.json.tdd_cron`: popped `test_character_data_loads` from queue → moved to `tests_passed` with commit `8085a0d`. Advanced `current_test_focus` to `test_tech_data_loads` (queue[1]). `cycle_count: 4`, `total_loops_completed: 35`, `last_loop_status: "authored_test"`.
+
+**Why this test, why now:**
+- `tdd_cron.test_queue[1]` was the focus (queue advanced to it after cycle 34). This is the second TDD cycle and the first data-layer test — a direct dependency of `test_party_manager_active_roster` (cycle 37) and `test_tech_resolver_basic_attack` (cycle 38).
+- The §7.3 typed data layer is the foundation for §7.7 (PartyManager formation of 6-character party), §7.10 (combat TechResolver), and §13.7 (character screen element grid UI). Writing the test first commits the contract; the GDScript `CharacterData.gd` Resource (a `scaffolding_cron` item, currently queue[0]) is unblocked.
+
+**The 7-test contract (per §7.3 + §15.4 step 1):**
+1. `test_module_imports` — `CharacterData` class is importable.
+2. `test_load_serge_basic_fields` — Phase 3 locked values (white element, base, tier 1 'Dash and Slash', tier 8 'Glide Hook').
+3. `test_load_kidd_innate_field` — Kidd's 'steal' innate surfaces as a typed enum (per §3.4 element-tier mapping).
+4. `test_load_nikki_combined_support_id` — combined unit 'korcha_macha' appears in `support_slots` (matches Phase 3 combined-units list in `loop_state.json.phase_3_redesign.support_units.combined`).
+5. `test_support_slots_is_list_of_tuples` — exposed as iterable `(support_id, tier)` pairs (PartyManager can iterate without re-parsing JSON).
+6. `test_load_all_three_bases` — serge, kidd, nikki all load (integration test for the data layer).
+7. `test_missing_file_raises` — `FileNotFoundError` on bad path (loud-fail per §7.3).
+
+**Important lessons for future loops:**
+- **The Python `CharacterData` mirror is the test-side contract for the GDScript Resource.** The GDScript `CharacterData.gd` (future `scaffolding_cron` queue[0]) must satisfy the same 7 contracts. The Python test file is the executable specification. A future loop writing the GDScript version should reference this Python mirror and ensure the GDScript implementation passes the same tests in the headless Godot runtime.
+- **The `_ALLOWED_FIELDS` whitelist in `tools/character_data.py` mirrors the schema's `properties` block.** Adding a new field to the schema requires adding it here (and the corresponding test). Diverging from the schema is the §6.5 anti-pattern.
+- **`support_slots` is normalized to `list[tuple[str, int]]`** in the loader. The raw JSON has `list[dict[str, int]]`; the loader does the conversion so PartyManager (cycle 37) and TechResolver (cycle 38) can iterate without re-parsing.
+- **The file `loop_state.json` has CRLF line endings AND a leading `bash.exe: warning: could not find /tmp` line.** The `patch` tool refuses to write to it (fails JSON validation). Future state-update cycles should use the pattern in `game/tools/_update_state_cycle35.py`: strip the leading bytes before the first `{`, normalize CRLF→LF, parse, mutate, re-serialize, and restore CRLF on write. The same pattern works for `loop_memory.md` (also CRLF).
+- **Test file imports use the `sys.path.insert(0, str(GAME_DIR / "tools"))` pattern** (matching the existing `test_determinism.py`). The `conftest.py` scrubs hermes-agent PYTHONPATH contamination, so the project venv is the import source for jsonschema etc.
+- **Word count: this entry is ~500 words.** The cron prompt's "memory is the loop's responsibility" discipline (§9.12) says future loops benefit from scannable entries. The "7-test contract" list above is the scannable summary; the prose around it is the rationale. Future TDD cycle entries should follow the same shape.
+
+**Test queue state at end of this loop:**
+- `tests_passed: [test_determinism_prng_seeded, test_character_data_loads]` (commits 34aa84f, 8085a0d)
+- `test_queue: [test_tech_data_loads, test_party_manager_active_roster, test_tech_resolver_basic_attack]`
+- `current_test_focus: test_tech_data_loads` (next loop, cycle 36)
+- `cycle_count: 4` (2 authored-test cycles after 2 prior housekeeping/idle cycles)
+
+**Document state at end of this loop:**
+- File: `D:\Game Design\Remaster Engine\game\tests\test_character_data.py` — 7 tests, all passing
+- File: `D:\Game Design\Remaster Engine\game\tools\character_data.py` — 110 lines, mirrors §7.3 GDScript Resource
+- File: `D:\Game Design\Remaster Engine\loop_state.json` — `total_loops_completed: 35`, `last_loop_status: "authored_test"`, `tdd_cron.cycle_count: 4`
+- File: `D:\Game Design\Remaster Engine\loop_memory.md` — this entry appended
+- Git: commit `8085a0d` on `main` (2 files changed, 214 insertions).
+
+**The TDD loop has produced its second authored test. The next loop (cycle 36) will pick `test_tech_data_loads` from the queue (§15.4 step 2).**
+
+
+---
+
+## 2026-07-21 — TDD cycle 35: test_character_data_loads — PASSING
+
+**What I did this loop:**
+- Authored `game/tests/test_character_data.py` (7 tests) — RED phase.
+- Confirmed the test failed for the right reason: `ModuleNotFoundError: No module named 'character_data'` (matches the queue's `expected_failure: "CharacterData.gd missing / fails to load data/characters/serge.json"`).
+- Authored `game/tools/character_data.py` — minimal `CharacterData` class mirroring the future GDScript `CharacterData.gd` Resource. Python-side typed loader; the GDScript version is a separate `scaffolding_cron` item. GREEN phase.
+- Ran full test suite: **34/34 pass** (27 prior + 7 new) in 1.52s.
+- Committed: `8085a0d test: CharacterData typed loader for character JSON (§7.3, §15.4 step 1)`.
+- Updated `loop_state.json.tdd_cron`: popped `test_character_data_loads` from queue → moved to `tests_passed` with commit `8085a0d`. Advanced `current_test_focus` to `test_tech_data_loads` (queue[1]). `cycle_count: 4`, `total_loops_completed: 35`, `last_loop_status: "authored_test"`.
+
+**Why this test, why now:**
+- `tdd_cron.test_queue[1]` was the focus (queue advanced to it after cycle 34). This is the second TDD cycle and the first data-layer test — a direct dependency of `test_party_manager_active_roster` (cycle 37) and `test_tech_resolver_basic_attack` (cycle 38).
+- The §7.3 typed data layer is the foundation for §7.7 (PartyManager formation of 6-character party), §7.10 (combat TechResolver), and §13.7 (character screen element grid UI). Writing the test first commits the contract; the GDScript `CharacterData.gd` Resource (a `scaffolding_cron` item, currently queue[0]) is unblocked.
+
+**The 7-test contract (per §7.3 + §15.4 step 1):**
+1. `test_module_imports` — `CharacterData` class is importable.
+2. `test_load_serge_basic_fields` — Phase 3 locked values (white element, base, tier 1 'Dash and Slash', tier 8 'Glide Hook').
+3. `test_load_kidd_innate_field` — Kidd's 'steal' innate surfaces as a typed enum (per §3.4 element-tier mapping).
+4. `test_load_nikki_combined_support_id` — combined unit 'korcha_macha' appears in `support_slots` (matches Phase 3 combined-units list in `loop_state.json.phase_3_redesign.support_units.combined`).
+5. `test_support_slots_is_list_of_tuples` — exposed as iterable `(support_id, tier)` pairs (PartyManager can iterate without re-parsing JSON).
+6. `test_load_all_three_bases` — serge, kidd, nikki all load (integration test for the data layer).
+7. `test_missing_file_raises` — `FileNotFoundError` on bad path (loud-fail per §7.3).
+
+**Important lessons for future loops:**
+- **The Python `CharacterData` mirror is the test-side contract for the GDScript Resource.** The GDScript `CharacterData.gd` (future `scaffolding_cron` queue[0]) must satisfy the same 7 contracts. The Python test file is the executable specification. A future loop writing the GDScript version should reference this Python mirror and ensure the GDScript implementation passes the same tests in the headless Godot runtime.
+- **The `_ALLOWED_FIELDS` whitelist in `tools/character_data.py` mirrors the schema's `properties` block.** Adding a new field to the schema requires adding it here (and the corresponding test). Diverging from the schema is the §6.5 anti-pattern.
+- **`support_slots` is normalized to `list[tuple[str, int]]`** in the loader. The raw JSON has `list[dict[str, int]]`; the loader does the conversion so PartyManager (cycle 37) and TechResolver (cycle 38) can iterate without re-parsing.
+- **The file `loop_state.json` has CRLF line endings AND a leading `bash.exe: warning: could not find /tmp` line.** The `patch` tool refuses to write to it (fails JSON validation). Future state-update cycles should use the same pattern this loop used: strip the leading bytes before the first `{`, normalize CRLF→LF, parse, mutate, re-serialize, and restore CRLF on write. The same pattern works for `loop_memory.md` (also CRLF).
+- **Test file imports use the `sys.path.insert(0, str(GAME_DIR / "tools"))` pattern** (matching the existing `test_determinism.py`). The `conftest.py` scrubs hermes-agent PYTHONPATH contamination, so the project venv is the import source for jsonschema etc.
+- **Word count: this entry is ~500 words.** The cron prompt's "memory is the loop's responsibility" discipline (§9.12) says future loops benefit from scannable entries. The "7-test contract" list above is the scannable summary; the prose around it is the rationale. Future TDD cycle entries should follow the same shape.
+
+**Test queue state at end of this loop:**
+- `tests_passed: [test_determinism_prng_seeded, test_character_data_loads]` (commits 34aa84f, 8085a0d)
+- `test_queue: [test_tech_data_loads, test_party_manager_active_roster, test_tech_resolver_basic_attack]`
+- `current_test_focus: test_tech_data_loads` (next loop, cycle 36)
+- `cycle_count: 4` (2 authored-test cycles after 2 prior housekeeping/idle cycles)
+
+**Document state at end of this loop:**
+- File: `D:\Game Design\Remaster Engine\game	ests	est_character_data.py` — 7 tests, all passing
+- File: `D:\Game Design\Remaster Engine\game	ools\character_data.py` — 110 lines, mirrors §7.3 GDScript Resource
+- File: `D:\Game Design\Remaster Engine\loop_state.json` — `total_loops_completed: 35`, `last_loop_status: "authored_test"`, `tdd_cron.cycle_count: 4`
+- File: `D:\Game Design\Remaster Engine\loop_memory.md` — this entry appended
+- Git: commit `8085a0d` on `main` (2 files changed, 214 insertions).
+
+**The TDD loop has produced its second authored test. The next loop (cycle 36) will pick `test_tech_data_loads` from the queue (§15.4 step 2).**
