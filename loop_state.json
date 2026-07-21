@@ -1277,7 +1277,7 @@
       {
         "name": "test_action_queue_speed_sort",
         "target_file": "game/tests/test_action_queue.py",
-        "commit": "pending-this-commit",
+        "commit": "2122fc4",
         "passed_at": "2026-07-21T10:39:00+00:00"
       }
     ],
