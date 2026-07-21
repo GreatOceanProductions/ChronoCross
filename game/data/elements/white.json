@@ -1,0 +1,15 @@
+{
+  "id": "white",
+  "display_name": "White",
+  "color_hex": "#FFFFFF",
+  "base_damage_type": "magic",
+  "resistances": {
+    "white": 1.0,
+    "red": 0.5,
+    "blue": 0.5,
+    "green": 1.0,
+    "yellow": 2.0,
+    "black": 2.0,
+    "neutral": 1.0
+  }
+}
