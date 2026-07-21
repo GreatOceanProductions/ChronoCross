@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T04:53:00+00:00",
-  "last_loop_completed": "2026-07-21T08:53:00+00:00",
-  "total_loops_completed": 32,
+  "last_updated": "2026-07-21T05:55:00+00:00",
+  "last_loop_completed": "2026-07-21T05:55:00+00:00",
+  "total_loops_completed": 34,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1112,8 +1112,8 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "planned",
-  "last_loop_action": "Planner tick 32: seeded tdd_cron.test_queue (5 items), data_cron.target_queue (3 items), scaffolding_cron.target_queue (2 items). All items derived from locked design (no open decisions).",
+  "last_loop_status": "authored_test",
+  "last_loop_action": "TDD cycle 34: authored 'test_determinism_prng_seeded' → 27/27 pass (commit 34aa84f). test_queue advanced to next item: test_character_data_loads",
   "data_cron": {
     "last_data_authored": "nikki.json",
     "last_data_type": "character",
@@ -1162,16 +1162,10 @@
     }
   },
   "tdd_cron": {
-    "last_status": "queued",
-    "last_action": "Planner populated test_queue (5 items); first run will pick queue[0]",
-    "last_run_at": "2026-07-21T08:53:00+00:00",
+    "last_status": "authored_test",
+    "last_action": "TDD cycle 34: authored 'test_determinism_prng_seeded' → 27/27 pass (commit 34aa84f). test_queue advanced to next item: test_character_data_loads",
+    "last_run_at": "2026-07-21T05:55:00+00:00",
     "test_queue": [
-      {
-        "name": "test_determinism_prng_seeded",
-        "target_file": "game/tests/test_determinism.py",
-        "expected_failure": "Module Determinism not found / PRNG not deterministic across instances",
-        "spec_ref": "§7.2 derived PRNGs scoped by tag (combat, dialog, treasure)"
-      },
       {
         "name": "test_character_data_loads",
         "target_file": "game/tests/test_character_data.py",
@@ -1197,10 +1191,19 @@
         "spec_ref": "§15.4 step 5, §7.10 combat engine, §3.5 basic attack line + augmentation"
       }
     ],
-    "tests_passed": [],
-    "current_test_focus": "test_determinism_prng_seeded",
-    "last_test_authored": null,
-    "cycle_count": 2
+    "tests_passed": [
+      {
+        "name": "test_determinism_prng_seeded",
+        "target_file": "game/tests/test_determinism.py",
+        "commit": "34aa84f",
+        "passed_at": "2026-07-21T05:55:00+00:00"
+      }
+    ],
+    "current_test_focus": "test_character_data_loads",
+    "last_test_authored": "test_determinism_prng_seeded",
+    "cycle_count": 3,
+    "last_run_action": "authored test + green",
+    "last_run_completed": "2026-07-21T05:55:00+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",
