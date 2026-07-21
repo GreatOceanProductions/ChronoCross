@@ -1349,3 +1349,34 @@ Refs: §7.7 6-character party formation, §3.9 active party size,
 - `commit`: pending (about to commit with `git add -A` per data-cron housekeeping pattern)
 
 **Next cycle target:** `test_tech_resolver_basic_attack` (§15.4 step 5, §7.10 combat engine, §3.5 basic attack line + augmentation). The combat step that resolves "Serge uses Dash and Slash" into a damage roll + element + (future) augmentation effects. The Python mirror will be `game/tools/tech_resolver.py`, mirroring the prior three data-layer deliverables.
+
+## 2026-07-21 — TDD cycle 7: TechResolver basic attack line damage formula (§7.10, §15.4 step 5)
+
+**What I did this loop:**
+- Authored `game/tests/test_tech_resolver.py` with 8 tests pinning the §7.10 step 3 "Base damage × multiplier" contract for the basic attack line (no augmentations).
+- Authored `game/tools/tech_resolver.py` — minimal Python mirror of the future GDScript `TechResolver.gd`. Two dataclasses (`ResolvedEffect`, `ActionResult`) and one class (`TechResolver`) that takes a `Determinism` instance and resolves a `TechData` against an `attacker_attack`.
+- Confirmed RED: all 8 new tests failed with `ModuleNotFoundError: No module named 'tech_resolver'` — the test-driven failure mode.
+- Confirmed GREEN: all 8 new tests pass; full suite 61/61 passes (was 53/53).
+- Committed as `5072f8f` ("test: TechResolver basic attack line damage formula (§7.10, §15.4 step 5)"). Followed with bookkeeping commit `db4d4b3` (loop_state.json).
+- `loop_state.json`: `test_queue` is now empty, `cycle_count: 7`, `total_loops_completed: 39`.
+
+**Important lessons for future loops:**
+- **The dataclass-as-contract pattern continues.** Following `character_data.py` and `tech_data.py`, the resolver returns typed `ResolvedEffect` and `ActionResult` dataclasses rather than raw dicts. The view/animation layer can iterate `result.effects` without re-parsing JSON, and a future test can `assert eff.kind == "DAMAGE"` without string-keying into a dict. This is the same discipline the prior three cycles established.
+- **The `Determinism` instance is stashed in the constructor, not consumed in this cycle.** The basic attack path has no chance rolls; the `determinism` parameter is the *architectural seam* for the future augmentation chain (cycles 8+ will add pre/post-damage statuses, multiplier bonuses, on-hit chains, MP discounts, self-buffs). Future loops adding those features will have the `Determinism` already accessible via `self._determinism.scoped("combat")` — no refactor of the constructor needed.
+- **The §7.10 step 3 formula in minimal form is `magnitude = base_damage_multiplier × attacker_attack`.** Element resistance (§7.4), row modifiers (§7.7), and status modifiers compose on top in later cycles. The minimal form is what a future stat-leveling system needs: bumping Serge's attack from 10 → 15 raises the basic-attack damage by 50%. The test `test_resolve_damage_scales_with_attacker_attack` pins this contract.
+- **The resolver is decoupled from element resistance and row modifiers in this cycle.** The damage effect carries `element` (preserved from the input tech) so the future §7.4 layer can apply resistance on top. The same for `target_scope` (preserved for the §7.7 layer to pick the animation target). The dataclass shape is the contract surface for the future composition.
+- **The augmentation chain is a future cycle.** The basic attack has zero augmentations, so `applied_augmentations` is just `list(tech.augmentations)` passed through (empty for the basic attack). Future cycles will walk the chain in the resolver, applying pre-damage statuses, multiplier bonuses, on-hit chains, etc. The dataclass field is in place so the view layer has a stable shape.
+- **Cycle 7 is the FIFTH TDD cycle (cycle 7 in `cycle_count`; the document's history lists it as "TDD cycle 7").** The PoC's data-layer + party-formation + combat-resolver deliverables are now in place. The next cycles (8+) are augmentation chain walk, then element resistance, then row modifiers, then status application, then the GDScript mirror `TechResolver.gd`. The Python mirrors are the test surface; the GDScript versions are the engine surface.
+- **The `test_queue` is now empty.** Per the tdd-cron.md protocol: "If no test queue items and no ISSUES.md bugs and all tests pass, log idle in loop_state.json and exit." This is the first cycle where the queue went empty after a successful TDD pass (loops 15-17 were idle because the design document was complete and the tdd_cron work hadn't started yet; loop 33 was idle because the tdd_cron was being seeded).
+- **The cron prompt's IDLE rule says: log idle in `loop_state.json` and send a 1-line summary.** This loop has run TDD work (cycle 7), so the idle rule does not apply for *this* loop's output. But the queue is empty now, so the *next* cron tick will likely be an idle loop unless I (or another session) add to the queue.
+
+**State at end of run:**
+- `game/tests/test_tech_resolver.py` — 8 tests, all passing
+- `game/tools/tech_resolver.py` — ~150 lines, mirrors the prior data-layer discipline
+- 61/61 tests pass via `game/tools/run_tests.sh`
+- `loop_state.json`: `tdd_cron.cycle_count: 7`, `test_queue: []`, `last_test_authored: test_tech_resolver_basic_attack`
+- `loop_state.json`: `total_loops_completed: 39`, `last_loop_status: "authored_test"`
+- `game/ISSUES.md`: still empty
+- commits: `5072f8f` (test + impl), `db4d4b3` (state bookkeeping)
+
+**Next cycle target:** None — `test_queue` is empty. Per the cron prompt: "If no test queue items and no ISSUES.md bugs and all tests pass, log idle in loop_state.json and exit." The next cron tick (loop 8 of tdd_cron, or however it lands) should be an idle loop unless someone (this agent in a future session, the user, or another session) appends a new test idea to the queue. Likely candidates for the next test: `test_tech_resolver_augmentation_chain` (the §7.10 step 2 pre/post-damage augmentations) or `test_tech_resolver_element_resistance` (the §7.4 layer composing on top of the resolver).
