@@ -1823,3 +1823,13 @@ ActionQueue.gd will live in scripts/combat/ (scaffolding_cron item).
 
 **Open questions for the user (not blocking):**
 - No new decisions. The 4 highest-priority open questions from §13.7 / §14.9 remain open in `review.md`: element-system UI (Q-5), level-by-chapter pacing (Q-6), music handling (Q-9), "bring her back" ending (Q-11). The data-layer delivery for the element catalog spells is independent of these.
+
+---
+
+## Snapshot cron — cycle 49 (2026-07-21 13:13 UTC)
+
+- **Snapshot created:** state-07 (0.6 MB), 2026-07-21T13:13:29+00:00. Ring rotation confirmed: state-00..03 (01:04 batch) → state-04 (04:03) → state-05 (07:05) → state-06 (10:09, prior state-07) → state-07 (13:13, new).
+- **Commit:** f42e172 `state(snapshot-cron): cycle 49 — state-07 created (0.6 MB), loop_state.json refreshed` (1 file: loop_state.json).
+- **Push:** gh auth verified, `git push origin main` succeeded. 11 commits pushed (ba3546e..f42e172) — the backlog from cycles 41–48 (tdd-cron + scaffolding-cron + data-cron work) that had accumulated since the last snapshot push at 10:09. Follow-up commit cbda394 recorded the push result.
+- **Status:** Push success. 12 unpushed commits from prior cycle 48 (loop_state.json bookkeeping for data-cron) were also swept up in the same push. No push failures this tick.
+- **Note:** `game/tools/_update_loop_state_fireball.py` remains uncommitted on disk. It's a one-shot data-cron helper (per its docstring: "temp script, will be removed in a future cycle"). I deliberately did NOT stage it from snapshot-cron — it belongs to the data-cron's cleanup. Next data-cron tick should delete it after recording its housekeeping.
