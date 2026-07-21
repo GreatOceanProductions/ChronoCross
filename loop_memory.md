@@ -1604,3 +1604,82 @@ Refs: §7.7 6-character party formation, §3.9 active party size,
 - Snapshot cron: state-07 + 11 commits pushed in tick 37
 
 **The unaddressed-failure is cleared. The next cron tick can author the queued test.**
+
+## Snapshot tick 38 (2026-07-21T10:09Z)
+- state-07 created (0.4 MB, 537K on disk) at 2026-07-21T10:09:37Z. Replaces state-00 from 2026-07-21T01:04Z. Ring 8/8.
+- Working tree was clean at tick start — no commit needed.
+- 13 unpushed commits (627fee2..d0415b9) — all pushed to origin/main (gh auth OK, keyring token).
+- snapshot_cron.last_snapshot updated to 2026-07-21T10:09:37Z / state-07 / 0.4 MB.
+- snapshot_cron.last_push updated to 2026-07-21T10:09:55Z / d0415b9 / 13 commits / success.
+
+---
+
+## 2026-07-21 — TDD cycle 8 (loop 43): test_action_queue_speed_sort — PASSING
+
+**What I did this loop:**
+- Picked `tdd_cron.test_queue[0]` = `test_action_queue_speed_sort` per the §9.4 protocol. No `ISSUES.md` bugs, so the error-handling extension was not triggered.
+- RED: authored `game/tests/test_action_queue.py` with 10 tests covering the §7.10 (a) test surface contract:
+  1. `test_module_imports` — module exposes `ActionQueue` class
+  2. `test_empty_queue_returns_empty_order` — empty roster → `[]`
+  3. `test_single_combatant_queue` — 1-element edge case
+  4. `test_queue_sorts_by_speed_descending` — the §7.10 core contract
+  5. `test_queue_ties_broken_by_insertion_order` — the §7.10 determinism tie-breaker
+  6. `test_queue_tie_break_is_not_id_alphabetical` — explicit anti-regression on alphabetical fallback
+  7. `test_queue_is_stable_across_rebuilds` — same input → identical output
+  8. `test_queue_preserves_roster_length` — no silent drops on ties
+  9. `test_queue_sixteen_combatants_full_battle` — full 14-deep §7.10 battle (6 party + 8 enemies)
+  10. `test_queue_integration_with_party_manager` — composes with §7.7 PartyManager
+- Confirmed RED: 10/10 fail with `ModuleNotFoundError: No module named 'action_queue'` (the expected failure for an unscaffolded subsystem).
+- GREEN: authored `game/tools/action_queue.py` (the Python mirror, future GDScript `ActionQueue.gd` will land in `scaffolding_cron`):
+  - `ActionQueue(roster)` constructor, `ordered_ids()` accessor, `rebuild(roster=None)` for mid-battle updates (e.g., §7.6 form-change).
+  - Duck-typed combatant contract: accepts dicts or attribute-style objects with `id` and `speed`.
+  - Sort key: `(-speed, insertion_index)`. Negative speed = descending; explicit insertion index = ties broken by input order. Python's `sorted()` is stable, so the secondary index is the contract surface that makes "insertion order wins" self-documenting.
+  - Caches the sorted id list so repeated `ordered_ids()` calls are O(1) and never re-sort.
+- Re-ran new test file: 10/10 pass in 0.03s.
+- Re-ran full test suite: **71/71 pass in 1.89s** (61 prior + 10 new). No regression.
+- Updated `loop_state.json`: popped `test_action_queue_speed_sort` from `test_queue`, added to `tests_passed`, advanced `current_test_focus` to `test_tech_resolver_augmentation_chain`, bumped `cycle_count` 7→8, bumped `total_loops_completed` 42→43.
+- Will commit next.
+
+**Commit message drafted:**
+```
+test: ActionQueue speed-based sort (§7.10 combat engine, §15.4 PoC step 4)
+
+Pins the §7.10 (a) test surface contract:
+- sort combatants by speed descending
+- ties broken by insertion order (determinism across processes)
+- stable across rebuilds
+- composes with §7.7 PartyManager for the 6-party + 8-enemy = 14-deep queue
+
+Authored 10 tests in game/tests/test_action_queue.py; all 71 tests pass.
+Python mirror in game/tools/action_queue.py; future GDScript
+ActionQueue.gd will live in scripts/combat/ (scaffolding_cron item).
+```
+
+**Lessons for future loops:**
+- **Python's `sorted()` is stable, so explicit insertion-index tie-breaking is the contract surface.** A naïve `sorted(roster, key=lambda c: -c.speed)` would already work (equal speeds keep their input order), but adding `enumerate(...)` and a `(_, pair[0])` secondary key makes the "ties by insertion order" rule self-documenting. The comment in `_sort` matches the code that enforces it. A future reader who wonders "what's the tie-breaker?" gets the answer in one place.
+- **Duck-typed combatant contract is what makes the queue compose with PartyManager.** The §7.7 PartyManager returns a list of strings (ids); the §7.10 Battle needs combatants with id + speed. The bridge layer is a 3-line dict comprehension (`{"id": cid, "speed": speed_table[cid]}`). The test exercises the bridge explicitly so the integration surface is visible — a future reader can see exactly how the two subsystems compose.
+- **The `_sort` helper is a `@staticmethod` so it can be called from the constructor and from `rebuild()` without `self` capture.** Returning the sorted id list (not the sorted combatants) is the right shape for the public API; the `ordered_ids()` method then just returns a copy of the cached list. This keeps the contract surface narrow.
+- **Test #6 (anti-alphabetical) is the regression-bait test.** A future contributor who refactors `_sort` and accidentally falls back to `sorted(roster, key=lambda c: (-c.speed, c.id))` (alphabetical tie-break) will hit this test immediately. Tests #4 and #5 cover the positive contract; #6 covers the *anti-contract* — what must NOT happen. This is the discipline §3.5's "augmentation model is a contract" framing asks for.
+- **Test #9 (full 14-deep battle) catches off-by-one in the sort.** If `_sort` accidentally dropped combatants on tie (a bug a future refactor could easily introduce), the length check in test #8 would catch it but the per-id ordering check in test #9 would pinpoint the *which* id got dropped. Two complementary tests = sharper failure signal.
+- **The `cycle_count` discipline from Loop 34 holds.** This is a TDD cycle (8), not a fix-loop. `cycle_count` bumps 7→8, `total_loops_completed` bumps 42→43, and the new test is in `tests_passed` (not just `fix-loop` history). The protocol distinction matters: a future cron reading the state file can tell at a glance which loops were "real" TDD progress and which were test-fixes.
+
+**State at end of this loop:**
+- Test suite: 71/71 pass (61 prior + 10 new in test_action_queue.py)
+- `game/ISSUES.md`: empty
+- `loop_state.json`: `total_loops_completed: 43`, `tdd_cron.cycle_count: 8`, `tdd_cron.last_status: "test_committed"` (post-commit)
+- `tdd_cron.tests_passed`: 6 items (was 5, +test_action_queue_speed_sort)
+- `tdd_cron.test_queue`: 4 items remaining (was 5, -test_action_queue_speed_sort)
+- Commit: pending this message
+
+**Next TDD cycle (loop 44, ~30 min from now):**
+- Pick `tdd_cron.test_queue[0]` = `test_tech_resolver_augmentation_chain`.
+- §7.10 step 2 + §3.5 augmentation contract. The TechResolver grows an augmentation-chain walk: pre-damage augmentations apply (status pre-applications, MP discounts, self-buffs), post-damage augmentations apply after damage calc. The chain walks a single list with a `phase` field.
+- Depends on `test_action_queue_speed_sort` (now passing ✓) and `test_tech_resolver_basic_attack` (passing since cycle 39).
+- **BLOCKED on DEC-007**: the chain-walk semantics (single list with phase field, ordered). If DEC-007 is still open, the cycle will skip this test and idle per §9.3.
+
+**Cross-cron status update:**
+- Content cron: idle, document complete (15/15 sections, 74,293 words)
+- Data cron: 5/6 bases authored (kidd, serge, nikki, glenn, herle); next target norris
+- TDD cron: cycle 8 committed; 4 tests queued (test_tech_resolver_augmentation_chain first)
+- Decisions cron: 7 open decisions (DEC-001..DEC-007), 3 P1 + 4 P2 — DEC-007 blocks next TDD cycle
+- Snapshot cron: state-07 last

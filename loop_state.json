@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T09:42:00+00:00",
-  "last_loop_completed": "2026-07-21T09:42:00+00:00",
-  "total_loops_completed": 42,
+  "last_updated": "2026-07-21T10:39:00+00:00",
+  "last_loop_completed": "2026-07-21T10:39:00+00:00",
+  "total_loops_completed": 43,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1112,8 +1112,8 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "authored_fix",
-  "last_loop_action": "fix-loop: test_decisions_helper test_apply_timeouts_resolves_old_decisions was flaky (called datetime.now() twice, expected byte-identical strings). Fixed test to read filed timestamp from file. Commit 31cc52b. All 61 tests pass. TDD cycle_count NOT bumped (fix-loop per §9.3, not new-test cycle).",
+  "last_loop_status": "authored_test",
+  "last_loop_action": "tdd-cycle 8: test_action_queue_speed_sort (queue[0]) authored. 10 new tests in test_action_queue.py cover §7.10 (a) — speed-descending sort, ties by insertion order, stability, empty/single/full-battle edge cases, and PartyManager integration. 71/71 tests pass. cycle_count bumped 7->8.",
   "data_cron": {
     "last_data_authored": "herle.json",
     "last_data_type": "character",
@@ -1157,34 +1157,34 @@
   },
   "snapshot_cron": {
     "last_snapshot": {
-      "timestamp": "2026-07-21T07:05:48+00:00",
+      "timestamp": "2026-07-21T10:09:37+00:00",
       "slot": "state-07",
-      "size_mb": 0.347
+      "size_mb": 0.4
     },
     "last_push": {
-      "timestamp": "2026-07-21T07:06:35+00:00",
-      "commit": "78ca25c",
+      "timestamp": "2026-07-21T10:09:55+00:00",
+      "commit": "d0415b9",
       "status": "success",
       "commits_pushed": 13
     }
   },
   "tdd_cron": {
-    "last_status": "fix_committed",
-    "last_action": "fix-loop committed 31cc52b — test_apply_timeouts_resolves_old_decisions now reads actual filed timestamp from file. Next: proceed to test_action_queue_speed_sort from queue[0].",
-    "last_run_at": "2026-07-21T09:42:00+00:00",
+    "last_status": "test_committed",
+    "last_action": "tdd-cycle 8: test_action_queue_speed_sort (10 tests) authored + green. ActionQueue Python mirror in game/tools/action_queue.py. Next: test_tech_resolver_augmentation_chain from queue[0].",
+    "last_run_at": "2026-07-21T10:39:00+00:00",
     "test_queue": [
       {
-        "id": "test_action_queue_speed_sort",
-        "source_section": "7.10 (Combat Engine) + 6.7 (action queue)",
-        "description": "ActionQueue sorts combatants by speed, ties broken by insertion order. Foundation of the 5-step action lifecycle in 6.7 and the CombatSimulator in 7.10. Per 7.10 test surface item (a).",
-        "expected_failure": "ActionQueue module not found / sort not deterministic across instances",
+        "id": "test_tech_resolver_augmentation_chain",
+        "source_section": "7.10 step 2 (augmentation chain walk) + 3.5 (augmentation model)",
+        "description": "TechResolver walks the tech's augmentations list. Pre-damage augmentations apply (status pre-applications, MP discounts, self-buffs). Pins the §3.5 augmentation contract: support techs modify the base attack line, not replace it. Depends on DEC-007 (chain-walk semantics: single list with phase field, ordered).",
+        "expected_failure": "augmentation chain walk not implemented / phase field missing / idempotency failure on re-walk",
         "depends_on": [
-          "test_determinism_prng_seeded",
-          "test_character_data_loads",
-          "test_party_manager_active_roster"
+          "test_action_queue_speed_sort",
+          "test_tech_resolver_basic_attack",
+          "DEC-007"
         ],
         "priority": "high",
-        "scope_notes": "Python mirror in game/tools/action_queue.py; future GDScript ActionQueue.gd resource in scripts/combat/ per 7.10 architecture. Tie-breaker = insertion order to match 7.10 speed-based algorithm.",
+        "scope_notes": "Python mirror in game/tools/tech_resolver.py (extending the existing resolver). Future GDScript mirror in scripts/combat/TechResolver.gd. Pin: pre-damage augmentations run before damage calc; post-damage run after; both share the same list with a phase field. DEC-007 locks the wire format.",
         "cycles_to_complete": 1
       },
       {
@@ -1273,13 +1273,19 @@
         "target_file": "game/tests/test_tech_resolver.py",
         "commit": "5072f8f",
         "passed_at": "2026-07-21T08:29:46.294254+00:00"
+      },
+      {
+        "name": "test_action_queue_speed_sort",
+        "target_file": "game/tests/test_action_queue.py",
+        "commit": "pending-this-commit",
+        "passed_at": "2026-07-21T10:39:00+00:00"
       }
     ],
-    "current_test_focus": "test_action_queue_speed_sort",
-    "last_test_authored": "test_tech_resolver_basic_attack",
-    "cycle_count": 7,
+    "current_test_focus": "test_tech_resolver_augmentation_chain",
+    "last_test_authored": "test_action_queue_speed_sort",
+    "cycle_count": 8,
     "last_run_action": "authored test + green",
-    "last_run_completed": "2026-07-21T08:29:46.294254+00:00"
+    "last_run_completed": "2026-07-21T10:39:00+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",
