@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T12:00:00+00:00",
-  "last_loop_completed": "2026-07-21T12:00:00+00:00",
-  "total_loops_completed": 45,
+  "last_updated": "2026-07-21T12:52:31+00:00",
+  "last_loop_completed": "2026-07-21T12:52:31+00:00",
+  "total_loops_completed": 47,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1169,9 +1169,9 @@
     }
   },
   "tdd_cron": {
-    "last_status": "authored_test",
-    "last_action": "test: BattleSimulator apply_status — §7.5 resistance + immunity (§7.10 step 4) — 4 tests, commit fa799f8",
-    "last_run_at": "2026-07-21T12:00:00+00:00",
+    "last_status": "committed",
+    "last_action": "test: ElementGrid compute_resistance — §7.4 element resistance + DEC-001 chart — 6 tests, commit 329e509",
+    "last_run_at": "2026-07-21T12:30:00+00:00",
     "test_queue": [
       {
         "id": "test_battle_log_save_load_roundtrip",
@@ -1184,6 +1184,18 @@
         ],
         "priority": "medium",
         "scope_notes": "Python mirror in game/tools/battle_log.py. Depends on the §7.11 SaveSystem being authored first (scaffolding-cron item, future cycle). Place in queue now so the dependency is visible; will be skipped until SaveSystem is in place.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_element_grid_full_7x7_chart",
+        "source_section": "§7.4 element grid full 7x7 hexagonal graph + DEC-001 + DEC-006",
+        "description": "The full §7.4 hexagonal resistance chart: each of the 6 color elements is strong against exactly 2 and weak against exactly 2. Pin the full 7x7 chart (per DEC-006, neutral is the 7th) so the engine has a complete reference for the original Chrono Cross element relationships. Tests: every element row has exactly 7 entries (including self=1.0), every strong pair has the matching 0.5 mirror, the neutral row is all 1.0.",
+        "expected_failure": "ElementGrid loaded from data/elements/*.json (if files exist) or from a hardcoded 7x7 fixture; need to author the canonical chart in the test or as a JSON fixture.",
+        "depends_on": [
+          "test_element_grid_compute_resistance"
+        ],
+        "priority": "medium",
+        "scope_notes": "Author the canonical 7x7 chart as a hardcoded fixture in the test (the on-disk data/elements/resistances.json is a future translator output per §8.4). The full chart is small enough to inline.",
         "cycles_to_complete": 1
       }
     ],
@@ -1243,31 +1255,72 @@
         "commit": "fa799f8",
         "passed_at": "2026-07-21T12:00:00+00:00",
         "note": "4 tests in one cycle: full_immunity, normal_target, resistance_halves_chance, deterministic_seed. Queue item had 4 expected cases; all pinned in one test contract."
-      }
-    ],
-    "current_test_focus": "test_battle_log_save_load_roundtrip",
-    "last_test_authored": "test_battle_sim_status_resistance_immunity",
-    "cycle_count": 10,
-    "last_run_action": "authored test + green (88/88 pass)",
-    "last_run_completed": "2026-07-21T12:00:00+00:00"
-  },
-  "scaffolding_cron": {
-    "last_status": "queued",
-    "last_action": "Planner initialized scaffolding_cron block + target_queue (2 architecture items per §15.4 order)",
-    "last_scaffold_authored": null,
-    "last_run_at": "2026-07-21T08:53:00+00:00",
-    "target_queue": [
-      {
-        "file": "game/scripts/data/TechData.gd",
-        "category": "data_class",
-        "test_required": "game/tests/test_tech_data.py",
-        "spec_ref": "§15.4 step 2, §7.3 Tech + TechAugmentation data model, §3.8 8 magic tiers"
       },
       {
-        "file": "game/scripts/combat/ActionQueue.gd",
+        "name": "test_element_grid_compute_resistance",
+        "target_file": "game/tests/test_element_grid.py",
+        "commit": "329e509",
+        "passed_at": "2026-07-21T12:30:00+00:00",
+        "note": "6 tests in one cycle: canonical_strong_offense, canonical_strong_defense, neutral_pair, unknown_attacker, unknown_defender, chart_introspection. The §7.4 compute_resistance contract in its minimal form. Future cycle will pin the full 7x7 hexagonal graph per DEC-006."
+      }
+    ],
+    "current_test_focus": "test_element_grid_full_7x7_chart",
+    "last_test_authored": "test_element_grid_compute_resistance",
+    "cycle_count": 11,
+    "last_run_action": "authored test + green (94/94 pass)",
+    "last_run_completed": "2026-07-21T12:30:00+00:00"
+  },
+  "scaffolding_cron": {
+    "last_status": "completed",
+    "last_action": "Cycle 47: authored scripts/data/TechData.gd + tests/test_tech_data_godot.{gd,py}. Godot 4.3 headless boots clean, loads dash_and_slash.json, exercises from_path + from_dict, asserts locked section 7.3 fields. All 97 tests pass (3 new Godot-runtime + 7 Python mirror). Commit b8cd8e6.",
+    "last_scaffold_authored": "game/scripts/data/TechData.gd",
+    "last_run_at": "2026-07-21T12:52:31+00:00",
+    "authored_to_date": [
+      "game/scripts/data/CharacterData.gd",
+      "game/scripts/data/TechData.gd"
+    ],
+    "target_queue": [
+      {
+        "file": "game/scripts/autoloads/PartyManager.gd",
+        "category": "autoload",
+        "test_required": "game/tests/test_party_manager_godot.gd",
+        "spec_ref": "section 15.4 step 3, section 7 party management, section 3.3 6 bases + 36 supports"
+      },
+      {
+        "file": "game/scripts/autoloads/Determinism.gd",
+        "category": "autoload",
+        "test_required": "game/tests/test_determinism_godot.gd",
+        "spec_ref": "section 15.4 step 4, section 7.2 derived PRNGs per tag, section 6.4 typed subset"
+      },
+      {
+        "file": "game/scripts/autoloads/TechResolver.gd",
+        "category": "autoload",
+        "test_required": "game/tests/test_tech_resolver_godot.gd",
+        "spec_ref": "section 15.4 step 5, section 7.3 augmentation chain, section 6.7 5-step action lifecycle"
+      },
+      {
+        "file": "game/scripts/combat/CombatSimulator.gd",
         "category": "subsystem",
-        "test_required": "game/tests/test_action_queue.py",
-        "spec_ref": "§15.4 step 4, §7.10 action queue, §6.7 5-step action lifecycle"
+        "test_required": "game/tests/test_combat_simulator_godot.gd",
+        "spec_ref": "section 15.4 step 6, section 6.7 ECS-style combat, section 7.10 combat engine"
+      },
+      {
+        "file": "game/scripts/autoloads/ChapterController.gd",
+        "category": "autoload",
+        "test_required": "game/tests/test_chapter_controller_godot.gd",
+        "spec_ref": "section 15.4 step 7, section 7 chapter transition, section 12.4 / 12.6 form-change boundaries"
+      },
+      {
+        "file": "game/scripts/autoloads/SaveSystem.gd",
+        "category": "autoload",
+        "test_required": "game/tests/test_save_system_godot.gd",
+        "spec_ref": "section 15.4 step 8, .tres save format, schema_version migration"
+      },
+      {
+        "file": "game/scenes/character_screen.tscn",
+        "category": "scene",
+        "test_required": "game/tests/test_character_screen_godot.gd",
+        "spec_ref": "section 15.4 step 9, section 3.10 element-UI working assumption"
       }
     ]
   }
