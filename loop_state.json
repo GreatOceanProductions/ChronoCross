@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T07:52:11.326450+00:00",
-  "last_loop_completed": "2026-07-21T07:52:11.326450+00:00",
-  "total_loops_completed": 38,
+  "last_updated": "2026-07-21T08:29:46.294254+00:00",
+  "last_loop_completed": "2026-07-21T08:29:46.294254+00:00",
+  "total_loops_completed": 39,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1169,16 +1169,9 @@
   },
   "tdd_cron": {
     "last_status": "authored_test",
-    "last_action": "TDD cycle 6: authored test_party_manager_active_roster -> 53/53 pass. test_queue advanced to next item: test_tech_resolver_basic_attack",
-    "last_run_at": "2026-07-21T07:52:11.326450+00:00",
-    "test_queue": [
-      {
-        "name": "test_tech_resolver_basic_attack",
-        "target_file": "game/tests/test_tech_resolver.py",
-        "expected_failure": "TechResolver.gd missing / basic_attack line does not resolve",
-        "spec_ref": "§15.4 step 5, §7.10 combat engine, §3.5 basic attack line + augmentation"
-      }
-    ],
+    "last_action": "TDD cycle 7: authored test_tech_resolver_basic_attack -> 61/61 pass. test_queue is now empty.",
+    "last_run_at": "2026-07-21T08:29:46.294254+00:00",
+    "test_queue": [],
     "tests_passed": [
       {
         "name": "test_determinism_prng_seeded",
@@ -1203,13 +1196,19 @@
         "target_file": "game/tests/test_party_manager.py",
         "commit": "5c74a4d",
         "passed_at": "2026-07-21T07:52:11.326450+00:00"
+      },
+      {
+        "name": "test_tech_resolver_basic_attack",
+        "target_file": "game/tests/test_tech_resolver.py",
+        "commit": "5072f8f",
+        "passed_at": "2026-07-21T08:29:46.294254+00:00"
       }
     ],
-    "current_test_focus": "test_tech_resolver_basic_attack",
-    "last_test_authored": "test_party_manager_active_roster",
-    "cycle_count": 6,
+    "current_test_focus": "idle",
+    "last_test_authored": "test_tech_resolver_basic_attack",
+    "cycle_count": 7,
     "last_run_action": "authored test + green",
-    "last_run_completed": "2026-07-21T07:52:11.326450+00:00"
+    "last_run_completed": "2026-07-21T08:29:46.294254+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",
