@@ -1,0 +1,21 @@
+{
+  "id": "nikki",
+  "name": "Nikki",
+  "element": "blue",
+  "level": 1,
+  "is_base": true,
+  "basic_attack": "Grand Finale",
+  "tier_1_tech": "Grand Finale",
+  "tier_8_tech": "Limelight",
+  "innate": "performance",
+  "support_slots": [
+    {"support_id": "marcy", "tier": 1},
+    {"support_id": "korcha_macha", "tier": 2},
+    {"support_id": "fargo", "tier": 3},
+    {"support_id": "irene", "tier": 4},
+    {"support_id": "orhla", "tier": 5},
+    {"support_id": "pierre", "tier": 6}
+  ],
+  "sprite": "",
+  "portrait": ""
+}

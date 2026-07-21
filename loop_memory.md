@@ -930,3 +930,28 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - state-07 created (221K, replaces state-00 from 2026-07-21T01:04Z)
 - 3 commits pushed to origin/main (e21df3a..37be421): tdd-cron idle housekeeping loops 28+30, data: add characters/kidd
 - snapshot_cron metadata added to loop_state.json
+
+## 2026-07-21 — Loop 31: TDD cron idle (14th consecutive idle)
+
+- Read `cron-jobs/tdd-cron.md`, `loop_state.json`, tail of `loop_memory.md`, `game/ISSUES.md`, and ran the full test suite.
+- Test suite: 22/22 pass via `game/tools/run_tests.sh` (1.26s).
+- `game/ISSUES.md`: empty (template only, no open issues).
+- `loop_state.json.tdd_cron.*` keys were absent entirely; this loop initializes the `tdd_cron` block (`cycle_count: 1`, `last_status: "idle"`, `test_queue: []`, `tests_passed: []`).
+- Per protocol §"WHEN TO BE IDLE": empty queue + no bugs + all green → log idle, do not invent work.
+- No commit, no test authored, no code modified.
+
+## 2026-07-21 — Loop 32: data-cron cycle (author characters/nikki.json)
+
+- Read `cron-jobs/data-authoring-cron.md`, `loop_state.json`, `game/data/schemas/character.schema.json`, existing characters, and `game/ISSUES.md`.
+- ISSUES.md: empty (no open issues to fix before authoring new data).
+- Existing data: `data/characters/{kidd,serge}.json` (2/2 valid before this run).
+- Target: next base after Kidd in the locked `phase_3_redesign.bases` order → **Nikki (Blue)**.
+- Source data (all from `loop_state.json.phase_3_redesign`):
+  - Nikki is base 3, element Blue, tier_1 "Grand Finale", tier_8 "Limelight", 6 supports (Marcy, Korcha+Macha, Fargo, Irene, Orhla, Pierre).
+  - Blue innate per schema docstring = `performance` (matches Nikki's entertainer identity in original Chrono Cross).
+  - Combined unit "Korcha+Macha" → snake_case id `korcha_macha` (matches Serge's "leena_poshul" convention in existing file).
+- Authored `game/data/characters/nikki.json` matching `character.schema.json`.
+- Fixed existing state inconsistency: `data_cron.authored.characters` listed only `kidd` even though `serge.json` existed on disk and was committed (commit `5a387eb` initial PoC). Added both `serge` and `nikki` to the list.
+- Validation: `python game/tools/validate_data.py` → `3/3 files valid` (kidd, nikki, serge).
+- Validator env workaround: `game/tools/validate_data.py` strips `PYTHONPATH`/`PYTHONHOME` to avoid hermes-agent contamination; project venv at `game/.venv` (Python 3.12) is the correct interpreter. `uv pip install --python game/.venv/Scripts/python.exe rpds-py jsonschema` to make `import jsonschema` succeed under that interpreter.
+- Commit: data file + state update only (unstaged `loop_memory.md` tdd-cron entry that another loop had staged but not committed).
