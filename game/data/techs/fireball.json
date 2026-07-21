@@ -1,0 +1,18 @@
+{
+  "id": "fireball",
+  "display_name": "Fireball",
+  "tier": 1,
+  "element": "red",
+  "cost_mp": 3,
+  "base_damage_multiplier": 1.2,
+  "target_scope": "SINGLE_ENEMY",
+  "slot_kind": "SUPPORT_FIXED",
+  "augmentations": [],
+  "effects": [
+    {
+      "kind": "DAMAGE",
+      "magnitude": 1.2,
+      "element": "red"
+    }
+  ]
+}
