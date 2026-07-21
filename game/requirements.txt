@@ -1,0 +1,5 @@
+# Python dependencies for the data layer + tests.
+# Per §11.3 of the design document, Python package manager is `uv`.
+# Install with: uv pip install -r requirements.txt
+jsonschema>=4.17.0
+pytest>=7.4.0

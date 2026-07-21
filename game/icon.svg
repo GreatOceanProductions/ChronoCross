@@ -1,0 +1,6 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Remaster Engine - Chrono Cross PoC</title>
+  <rect width="128" height="128" fill="#1a1a2e"/>
+  <text x="64" y="64" text-anchor="middle" font-family="serif" font-size="14" fill="#e0e0ff">RC</text>
+  <text x="64" y="84" text-anchor="middle" font-family="serif" font-size="10" fill="#a0a0c0">PoC</text>
+</svg>

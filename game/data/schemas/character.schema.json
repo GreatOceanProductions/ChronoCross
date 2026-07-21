@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://remaster-engine.local/schemas/character.schema.json",
+  "title": "CharacterData",
+  "description": "Schema for a single character (base or support) in the Remaster Engine. Minimal version covering the PoC's data needs per §15.4 Step 1 of the design document.",
+  "type": "object",
+  "required": ["id", "name", "element", "level", "basic_attack", "tier_1_tech", "tier_8_tech"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Lowercase snake_case identifier. Used as filename and lookup key."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Display name shown in UI."
+    },
+    "element": {
+      "type": "string",
+      "enum": ["white", "red", "blue", "green", "yellow", "black"],
+      "description": "Color element. Per §3.4 of the design document, 6 elements are locked."
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99,
+      "description": "Current level. Per §3.8 locked level-based progression, level determines tier slot unlocks."
+    },
+    "is_base": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is one of the 6 main bases (Serge, Kidd, Nikki, Glenn, Herle, Norris). False for support characters."
+    },
+    "basic_attack": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Display name of the basic attack line. Always present, always relevant. Per §3.5 locked basic-attack-line model."
+    },
+    "tier_1_tech": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Tier 1 magic slot tech. Per §3.7 locked per-base techs."
+    },
+    "tier_8_tech": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Tier 8 magic slot tech. The character's ultimate ability. Per §3.7 locked per-base techs."
+    },
+    "innate": {
+      "type": "string",
+      "enum": ["steal", "performance", "combat", "dark", "healer", "none"],
+      "default": "none",
+      "description": "Innate role. Per §3.4 color-tier assignments: red=steal, blue=performance, green=combat, black=dark, yellow=healer, white=base."
+    },
+    "support_slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["support_id", "tier"],
+        "additionalProperties": false,
+        "properties": {
+          "support_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "tier": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          }
+        }
+      },
+      "default": [],
+      "description": "List of support characters attached to this base at specific tiers. Per §3.5 locked support-augmentation model."
+    },
+    "sprite": {
+      "type": "string",
+      "default": "",
+      "description": "Path to the character's field sprite. Empty string = placeholder rectangle per §15.3 PoC scope."
+    },
+    "portrait": {
+      "type": "string",
+      "default": "",
+      "description": "Path to the character's portrait. Empty string = placeholder."
+    }
+  }
+}

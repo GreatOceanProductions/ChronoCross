@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8main1234567"]
+
+[node name="Main" type="Node2D"]
+
+[node name="Label" type="Label" parent="."]
+offset_left = 400.0
+offset_top = 300.0
+offset_right = 880.0
+offset_bottom = 420.0
+text = "Remaster Engine - Chrono Cross PoC
+Phase 1: Faithful Remaster
+
+This is a placeholder main scene.
+The scaffolding-cron will replace this with:
+- Character screen (Endpoint 1, §15.2)
+- Map scene (Endpoint 2, §15.2)
+- Battle scene (Endpoint 3, §15.2)
+- Save/load menu (Endpoint 4, §15.2)
+"
+horizontal_alignment = 1
+vertical_alignment = 1

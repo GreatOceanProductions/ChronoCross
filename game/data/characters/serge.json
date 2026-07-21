@@ -1,0 +1,21 @@
+{
+  "id": "serge",
+  "name": "Serge",
+  "element": "white",
+  "level": 1,
+  "is_base": true,
+  "basic_attack": "Dash and Slash",
+  "tier_1_tech": "Dash and Slash",
+  "tier_8_tech": "Glide Hook",
+  "innate": "none",
+  "support_slots": [
+    {"support_id": "leena_poshul", "tier": 1},
+    {"support_id": "riddle", "tier": 2},
+    {"support_id": "starky", "tier": 3},
+    {"support_id": "steena", "tier": 4},
+    {"support_id": "doc", "tier": 5},
+    {"support_id": "angelic_pip", "tier": 6}
+  ],
+  "sprite": "",
+  "portrait": ""
+}

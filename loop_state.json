@@ -1,0 +1,1117 @@
+{
+  "project": "Remaster Engine Design Spec",
+  "version": "0.1.0",
+  "started": "2026-07-19",
+  "last_updated": "2026-07-20",
+  "last_loop_completed": "2026-07-20T23:54:35.050070+00:00",
+  "total_loops_completed": 22,
+  "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
+  "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
+  "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
+  "loop_memory_path": "D:\\Game Design\\Remaster Engine\\loop_memory.md",
+  "locked_design": {
+    "engine": "Godot 4",
+    "autonomy_model": "Mostly autonomous with design gates",
+    "worked_example": "Chrono Cross",
+    "phase_1": "Faithful Remaster — modern tech, original content/flow/balance",
+    "phase_2": "Stabilization Audit — evaluate every vestigial design choice on its own merits",
+    "phase_3": "Modifications — apply Phase 2 audit + new content/features + the redesign described below",
+    "visual_approach": "HD-2D style (2D characters over 2D/2.5D backgrounds)",
+    "modifiability_architecture": "Phase 1 requirement, not Phase 3 retrofit",
+    "content_accuracy_method": "Multi-source: emulation files + YouTube playthroughs + wikis + scripts + related-work context",
+    "legal_posture": "Fan work / clean-room, for skill development. No original code, no original assets, user owns original game as reference",
+    "project_relationship": "Standalone project. Lessons from D:\\Game Design\\TacticalRPG and D:\\Game Design\\TACTICA are reference material, not constraints. No codebase reuse.",
+    "lineage_integration": "Phase 3 collapses original A/B plotline branches into a single central loop that hits all major events",
+    "minigames": "Removed/ignored in Phase 3; design space freed for main story",
+    "main_cast_focus": "6 main characters with substantially expanded interaction with their supporting cast (vs. original's 'silent recruitment' pattern)",
+    "story_terminology": "Use 'Chapter' for the 10-beat party-progression structure. Use 'arc' for the original Chrono Cross's story sections when referenced.",
+    "pip_mechanic": "Reframed. During Lynx form, Devil Pip grants Lynx's dark techs (Feral Cats, Hell's Fury, Forever Zero). After returning to Serge form, Herle migrates those dark techs to her own slot. Serge's light techs (Luminaire, Heaven's Call, Flying Arrow) unlock only after returning to Serge's regular body, granted via Angelic Pip. Net effect: timing of access tied to story form, but all relevant tier-8 techs eventually available.",
+    "minigame_scope_locked": "Keep only puzzles required for the narrative (e.g., Manor passcode). Optional minigames (dragon feeding, etc.) are removed. The freed design space is reallocated to expanded support-cast interaction scenes.",
+    "godot_version_pinned": "4.3 (already installed at D:\\Tools\\Godot\\Godot_v4.3-stable_win64_console.exe). Confirmed.",
+    "language_pinned": "GDScript only. No C# / .NET runtime. Confirmed.",
+    "schema_validation_tool": "Python with jsonschema library. Confirmed.",
+    "prng_strategy": "Derived PRNGs scoped by tag (combat, dialog, treasure, etc.) so test inspection can identify which subsystem consumed entropy. Confirmed. Reasoning: 'we will have a lot of debugging to do' (user).",
+    "augmentation_strategy": "TechAugmentation as data only, no custom_handler. Tech execution triggers a scene (party completing the move, voice clip, visual effect) alongside the technical effects. Confirmed.",
+    "chapter_transitions": "Data only (ChapterData resource). No post-transition script. Confirmed.",
+    "save_file_format": "Text .tres (ResourceSaver default). Diffable, lintable, easy to migrate. Confirmed.",
+    "cinematic_system": "Data only (list of CinematicBeat resources: DIALOG, CAMERA_MOVE, ANIMATION, FLAG_SET, PARTY_CHANGE). No GDScript beat hook. Confirmed.",
+    "source_acquisition": "Fully automated. No license gate. The project is purely a fan project without commercial purpose, used for skill development. The agent may complete these actions (assuming they don't require financial payment).",
+    "asset_extraction_tooling": "Python with Pillow (TIM→PNG), ffmpeg (audio/video), timidity++ (MIDI→OGG). Confirmed.",
+    "translation_pipeline_granularity": "One script per character / per tech (extreme granularity). Confirmed.",
+    "visual_regression_baselines": "Large set: every scene, 200+ baselines, ~500 MB committed to the project. D: drive has the space. Confirmed.",
+    "phase_2_audit_trigger": "30-day stability gate: Phase 1 must be faithfully remastered and stable for 30 consecutive days of agent playthrough before Phase 2 begins. Confirmed.",
+    "agent_working_set_order": "State first (loop_state.json), then design documents (remaster_engine_design_spec.md), then call needed skills before moving to the next decision. Confirmed.",
+    "fix_log_strategy": "Multiple files for different categories. Only the final successful fix is in loop_memory.md. Failures and individual attempts are documented in separate files (e.g., FIXES.md, FAILURES.md, ISSUES.md). Confirmed.",
+    "tdd_commit_granularity": "One commit per TDD cycle (one test passing + the fix that made it pass). Confirmed.",
+    "user_daily_review_touchpoint": "Loop summary in the user's chat. Confirmed.",
+    "mid_loop_interrupt_handling": "When the user interrupts with an out-of-band message, complete the current task and then respond to the user. Prioritizes task completion over immediate user communication. Confirmed.",
+    "memory_file_retention": "Append forever, no rotation. Revisit when the file exceeds 100 KB. Confirmed.",
+    "ps1_emulator_default": "DuckStation, configurable via REMASTER_PS1_EMULATOR env var. Confirmed.",
+    "color_conversion_strategy": "Direct expansion (5-bit → 8-bit by left-shifting) for sprites/UI; perceptual (Lab/OKLab) for backgrounds. Confirmed.",
+    "seq_to_ogg_tool": "timidity++. Confirmed.",
+    "form_change_visual": "2D everywhere. No 3D model interpolation. Confirmed.",
+    "no_game_over_flag_timing": "Keep the original's trigger (after final boss's death animation). Confirmed for Phase 1 faithfulness.",
+    "visual_approach_locked": "2D sprite for all named characters, alongside the combat sprites (in 2D battle). Backgrounds, scenes, etc. from the original game's beautiful 2D environments. No 3D module. The 2D-over-2.5D backgrounds approach (HD-2D style) is the locked visual style.",
+    "engine_comparison_static": "Once a system is decided, stay with it. No re-evaluation triggers for Unity 2023 LTS, no UE 5 alternative column. §5.3 is a static snapshot.",
+    "s4_weight_locked": "S-4 (AI-agent integration) weight = 3 (critical). Locked.",
+    "form_change_chapter_boundary_locked": "Form-change at chapter 4, form-return at chapter 6. Locked per user response 2026-07-20. Affects §12.4 and §12.6.",
+    "norris_recruitment_locked": "Norris appears as a nonplayable character (NPC) helping to resolve the Kid illness arc before formally joining the party. The recruitment follows logically from the body-transformation event. Locked per user response 2026-07-20. Affects §12.11 and the Kid illness arc.",
+    "level_pacing_curve_locked": "Linear curve, ~1.5 levels/chapter from 1 to 10–12 across the 10-chapter structure. Random encounters are removed/condensed into 'set piece' fights per §3.12, so the curve assumes no random encounter XP source. All elemental slot tiers should be unlocked by the end-game via the level-based progression. Locked per user response 2026-07-20. Affects §12.15 and the level scaling curves in §7.",
+    "ng_plus_endings_locked": "The 'on tracks' (canonical/preferred) ending is reached by following the central plotline. Alternative endings (e.g., the original 'let her go' ending, the new 'bring her back' ending) are accessible as optional post-game activities that summarize the alternative paths the game could have taken. This avoids requiring a replay to see all endings while preserving the single-track narrative experience. Locked per user response 2026-07-20. Affects §12.13 and the post-game content design.",
+    "dark_tech_migration_locked": "The dark-tech migration is a mechanical conceit: abilities obtained during the Lynx form segment are not unneeded/replaced but automatically transferred to Herle, who remains a playable character after form-return. This ensures continuity of player progress through the form-change segment. Locked per user response 2026-07-20. Affects §3.7 and §12.6.",
+    "element_system_ui_locked": "Element system is surfaced on a dedicated character screen. Each character has a switchable view showing: (a) their character image/portrait, (b) their elemental grid (the slots that have unlocked via level progression), (c) the ability to choose a slot, select an available tech from the unlocked pool, and place it there, (d) the 'support' techs in their available slots that can either be left alone or replaced with another tech at the player's decision. Locked per user response 2026-07-20. Affects the §13.7 / §3.10 element-UI working assumption.",
+    "music_handling_locked": "Placeholder music only. The project is fan-only, used for skill development, and not released externally. No licensing of original music; no commissioned new music. Locked per user response 2026-07-20. Affects §2.4 and the music pipeline in §8.3.",
+    "fan_work_posture_reinforced": "All licensing decisions reaffirmed: this is a fan-only project for skill development, not commercial, not externally released. The 'no financial payment' constraint on automated source acquisition (§8.2 Decision C) extends to all other forms of commercial interaction (no licensing fees, no commissioned work, no commercial asset purchases). Locked per user response 2026-07-20."
+  },
+  "phase_3_redesign": {
+    "bases": [
+      {
+        "name": "Serge/Lynx",
+        "element": "White",
+        "tier_1_tech": "Dash and Slash",
+        "tier_8_tech": "Glide Hook",
+        "supports": [
+          "Leena+Poshul",
+          "Riddle",
+          "Starky",
+          "Steena",
+          "Doc",
+          "Angelic Pip"
+        ]
+      },
+      {
+        "name": "Kidd",
+        "element": "Red",
+        "tier_1_tech": "Red Pin",
+        "tier_8_tech": "Hotshot",
+        "innate": "Steal",
+        "supports": [
+          "Greco",
+          "Janice",
+          "Miki",
+          "Orcha",
+          "Zappa",
+          "Draggy"
+        ]
+      },
+      {
+        "name": "Nikki",
+        "element": "Blue",
+        "tier_1_tech": "Grand Finale",
+        "tier_8_tech": "Limelight",
+        "supports": [
+          "Marcy",
+          "Korcha+Macha",
+          "Fargo",
+          "Irene",
+          "Orhla",
+          "Pierre"
+        ]
+      },
+      {
+        "name": "Glenn",
+        "element": "Green",
+        "tier_1_tech": "Dash and Gash",
+        "tier_8_tech": "Sonic Sword",
+        "supports": [
+          "Karsh",
+          "Razzly",
+          "Radius",
+          "Van",
+          "Sprigg",
+          "Turnup+NeoFio"
+        ]
+      },
+      {
+        "name": "Herle",
+        "element": "Black",
+        "tier_1_tech": "Moonshine",
+        "tier_8_tech": "Lunairetic",
+        "supports": [
+          "Guile",
+          "Luccia",
+          "Mojo",
+          "Skelly",
+          "Grobyc",
+          "Devil Pip"
+        ]
+      },
+      {
+        "name": "Norris",
+        "element": "Yellow",
+        "tier_1_tech": "Sunshower",
+        "tier_8_tech": "Top Shot",
+        "supports": [
+          "Sneff",
+          "Leah",
+          "Mel",
+          "Zoah",
+          "Viper",
+          "Funguy"
+        ]
+      }
+    ],
+    "support_units": {
+      "combined": [
+        "Leena+Poshul",
+        "Korcha+Macha",
+        "Turnup+NeoFio"
+      ],
+      "standalone_count": 33
+    },
+    "magic_tier_system": "8 magic tiers per character. Elemental spell slots are unlocked by character level, not by player choice. On average, each character starts with 1 slot at tier 1 at level 1; level 3 gives 2 slots at tier 1; level 5 gives 2 at tier 1, 1 at tier 2; level 6 adds 1 more at tier 1; level 7 adds 1 at tier 2; level 8 adds 1 at tier 3; level 9 adds a 4th slot. This continues up to 8th tier elemental grids. The level-based progression is part of the locked design — it replaces the earlier 'open grid slot' concept.",
+    "open_grid_slot_purpose": "REMOVED. The original 'open grid slot for player choice' concept is replaced by level-based progression. Personalization comes from which support techs are attached to which base, not from choosing which slots to fill.",
+    "basic_attack_line": "Each base has a basic attack that scales with the magic tier system. Always present, always relevant, defines base identity.",
+    "support_tech_role": "Augment the basic attack line with features (status effects, buffs, debuffs) rather than replacing it with separate actions. A tier-3 support tech might modify the basic attack to also apply a status. Tech execution should trigger a scene (party completing the move, voice clip, visual effect) alongside the technical effects.",
+    "feature_mining": "Techs that are 'just damage' become candidates for mining underused status effects from the system's design space. This is how 'boring' techs gain identity without inventing new mechanics.",
+    "tech_design_granularity": "Per character / per tech (extreme granularity). One translation script per character or per tech, per the §8.4 decision.",
+    "estimated_tech_count": "~60 fixed techs + per-base progression of elemental slots up to 8th tier. Actual number of available techs grows with character level across the level-based progression.",
+    "chapter_structure": "10 chapters of party progression (originally discussed as 'acts', now renamed to 'chapters'). Each chapter adds to the active party or changes its composition. Order: Serge→Kidd→Nikki→Glenn→(form)→Herle→Norris. Confirmed.",
+    "active_party_size": "6 (up from original 3). Slot unlocks at chapter boundaries create dramatic progression reveals.",
+    "support_combining_rules": "3 explicit combined units: Leena+Poshul, Korcha+Macha, Turnup+NeoFio. All other 33 supports are standalone.",
+    "locked_techs_per_base": {
+      "Serge/Lynx (White)": [
+        "Dash and Slash (1)",
+        "Glide Hook (8)"
+      ],
+      "Kidd (Red)": [
+        "Red Pin (1)",
+        "Hotshot (8)"
+      ],
+      "Nikki (Blue)": [
+        "Grand Finale (1)",
+        "Limelight (8)"
+      ],
+      "Glenn (Green)": [
+        "Dash and Gash (1)",
+        "Sonic Sword (8)"
+      ],
+      "Herle (Black)": [
+        "Moonshine (1)",
+        "Lunairetic (8)"
+      ],
+      "Norris (Yellow)": [
+        "Sunshower (1)",
+        "Top Shot (8)"
+      ]
+    },
+    "locked_techs_for_supports": "Three techs per support, emulated as closely as possible from the original game. The full element catalog from the original Chrono Cross wiki is the authoritative reference (see `element_catalog` below).",
+    "element_catalog": {
+      "source": "Extracted from Chrono Cross wiki (the original game) — full element data including level, target, and description for all 6 elements + Chrono Cross special",
+      "elements": {
+        "Red": [
+          {
+            "name": "×1Tablet",
+            "level": "1±0",
+            "target": "Single Ally/Enemy",
+            "description": "Restores HP (Small)"
+          },
+          {
+            "name": "TurnRed",
+            "level": "1±7",
+            "target": "Single Enemy/Ally",
+            "description": "Turn foe's attribute / ally's attacks red"
+          },
+          {
+            "name": "Fireball",
+            "level": "1±7",
+            "target": "Single Enemy",
+            "description": "Hurls spheres of flames at enemy"
+          },
+          {
+            "name": "×1Ointment",
+            "level": "2±0",
+            "target": "Single Ally",
+            "description": "Heals burns and red status effects"
+          },
+          {
+            "name": "MagmaBomb",
+            "level": "2±6",
+            "target": "All Enemies",
+            "description": "Launches a volley of fireballs at enemies"
+          },
+          {
+            "name": "AntiBlue",
+            "level": "3±5 (innate only)",
+            "target": "Single Enemy",
+            "description": "Temporarily seals blue Elements"
+          },
+          {
+            "name": "FirePillar",
+            "level": "3±5",
+            "target": "Single Enemy",
+            "description": "Burns enemy in a pillar of flames"
+          },
+          {
+            "name": "Strengthen",
+            "level": "4±4",
+            "target": "Singly Ally",
+            "description": "Temporarily increases your attack power"
+          },
+          {
+            "name": "Weaken",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Temporarily decreases foe's attack power"
+          },
+          {
+            "name": "MagmaBurst",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Makes lava gush out from beneath foe"
+          },
+          {
+            "name": "RedField",
+            "level": "5±3",
+            "target": "All Enemies & Allies",
+            "description": "Colors all field attributes red"
+          },
+          {
+            "name": "↓Inferno",
+            "level": "5±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Inferno Element"
+          },
+          {
+            "name": "Inferno",
+            "level": "5±3",
+            "target": "All Enemies",
+            "description": "Heats air to a burning-hot temperature"
+          },
+          {
+            "name": "Recharge",
+            "level": "6±0 (innate only)",
+            "target": "Single Ally",
+            "description": "Recovers a used Element for re-use"
+          },
+          {
+            "name": "Ninety-Nine",
+            "level": "6±2 (innate only)",
+            "target": "Single Ally",
+            "description": "Temporarily keeps Hit% of basic attacks at 99%"
+          },
+          {
+            "name": "↓Volcano",
+            "level": "6±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Volcano Element"
+          },
+          {
+            "name": "Volcano",
+            "level": "6±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Induces an enormous volcanic eruption"
+          },
+          {
+            "name": "↓RedWolf",
+            "level": "7±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ✰RedWolf Element"
+          },
+          {
+            "name": "✰RedWolf",
+            "level": "7±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Summons a fire wolf to create a sea of flames"
+          },
+          {
+            "name": "✰Salamander",
+            "level": "8±0 (innate only)",
+            "target": "All Enemies",
+            "description": "Use salamander's breath to incinerate foes"
+          }
+        ],
+        "Blue": [
+          {
+            "name": "TurnBlue",
+            "level": "1±7",
+            "target": "Single Enemy/Ally",
+            "description": "Turn foe's attribute / ally's attacks blue"
+          },
+          {
+            "name": "Cure",
+            "level": "1±7",
+            "target": "Single Enemy/Ally",
+            "description": "Restores HP (Small)"
+          },
+          {
+            "name": "AquaBeam",
+            "level": "1±7",
+            "target": "Single Enemy",
+            "description": "Blasts foe with high-pressure water stream"
+          },
+          {
+            "name": "×1Medicine",
+            "level": "2±0",
+            "target": "Single Ally",
+            "description": "Heals the flu and blue status effects"
+          },
+          {
+            "name": "IceLance",
+            "level": "2±6",
+            "target": "Single Enemy",
+            "description": "Hurls an icicle spear at unsuspecting foe"
+          },
+          {
+            "name": "AntiRed",
+            "level": "3±5 (innate only)",
+            "target": "Single Enemy",
+            "description": "Temporarily seals red Elements"
+          },
+          {
+            "name": "CurePlus",
+            "level": "3±5",
+            "target": "Single Enemy/Ally",
+            "description": "Restores HP (Medium)"
+          },
+          {
+            "name": "AquaBall",
+            "level": "3±5",
+            "target": "Single Enemy",
+            "description": "Hurls a large sphere of water at opponent"
+          },
+          {
+            "name": "Nimble",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Temporarily increases physical Evade%"
+          },
+          {
+            "name": "Numble",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Temporarily decreases physical Evade%"
+          },
+          {
+            "name": "IceBlast",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Freezes your foe in a cage of ice"
+          },
+          {
+            "name": "BlueField",
+            "level": "5±3",
+            "target": "Modify Field",
+            "description": "Colors all field attributes blue"
+          },
+          {
+            "name": "CureAll",
+            "level": "5±3 (innate only)",
+            "target": "All Allies",
+            "description": "Restores HP (Large)"
+          },
+          {
+            "name": "↓Deluge",
+            "level": "5±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Deluge Element"
+          },
+          {
+            "name": "Deluge",
+            "level": "5±3",
+            "target": "All Enemies",
+            "description": "Inundates enemies in icy-cold floodwaters"
+          },
+          {
+            "name": "Vigora",
+            "level": "6±2 (innate only)",
+            "target": "Single Ally",
+            "description": "Temporarily stops your stamina from decreasing"
+          },
+          {
+            "name": "↓Iceberg",
+            "level": "6±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Iceberg Element"
+          },
+          {
+            "name": "Iceberg",
+            "level": "6±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Hails large chunks of ice down on foes"
+          },
+          {
+            "name": "↓FrogPrince",
+            "level": "7±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ✰FrogPrince Element"
+          },
+          {
+            "name": "✰FrogPrince",
+            "level": "7±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Summons Frog Prince to perform a water attack"
+          },
+          {
+            "name": "✰BlueWhale",
+            "level": "8±0 (innate only)",
+            "target": "All Enemies",
+            "description": "Calls on Neptune's anger to create a tsunami"
+          }
+        ],
+        "Green": [
+          {
+            "name": "TurnGreen",
+            "level": "1±7",
+            "target": "Single Enemy/Ally",
+            "description": "Turn foe's attribute / ally's attacks green"
+          },
+          {
+            "name": "Bushwhacker",
+            "level": "1±7",
+            "target": "Single Enemy",
+            "description": "Slices foe with a cloud of whirling leaves"
+          },
+          {
+            "name": "×1Antidote",
+            "level": "2±0",
+            "target": "Single Ally",
+            "description": "Heals poison and green status effects"
+          },
+          {
+            "name": "Heal",
+            "level": "2±6",
+            "target": "Single Enemy/Ally",
+            "description": "Restores HP (Small)"
+          },
+          {
+            "name": "AeroSaucer",
+            "level": "2±6",
+            "target": "Single Enemy",
+            "description": "Throws blades of razor-sharp air to slice enemy"
+          },
+          {
+            "name": "AntiYellow",
+            "level": "3±5 (innate only)",
+            "target": "Single Enemy",
+            "description": "Temporarily seals yellow Elements"
+          },
+          {
+            "name": "Bushbasher",
+            "level": "3±5",
+            "target": "Single Enemy",
+            "description": "Encases foe in a cage of thorny brambles"
+          },
+          {
+            "name": "HealAll",
+            "level": "4±4",
+            "target": "All Allies",
+            "description": "Restores HP (Medium)"
+          },
+          {
+            "name": "EagleEye",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Temporarily increases your attack Hit%"
+          },
+          {
+            "name": "BatEye",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Temporarily decreases foe's attack Hit%"
+          },
+          {
+            "name": "AeroBlaster",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Shoots a sonic blast at your foe"
+          },
+          {
+            "name": "GreenField",
+            "level": "5±3",
+            "target": "Modify Field",
+            "description": "Colors all field attributes green"
+          },
+          {
+            "name": "↓Carnivore",
+            "level": "5±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Carnivore Element"
+          },
+          {
+            "name": "Carnivore",
+            "level": "5±3",
+            "target": "All Enemies",
+            "description": "A humongous Venus Flytrap devours foes"
+          },
+          {
+            "name": "HealPlus",
+            "level": "6±2 (innate only)",
+            "target": "Single Enemy/Ally",
+            "description": "Restores HP (Large)"
+          },
+          {
+            "name": "InfoScope",
+            "level": "6±2 (innate only)",
+            "target": "Single Enemy",
+            "description": "Detects your opponent's HP data"
+          },
+          {
+            "name": "↓Tornado",
+            "level": "6±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Tornado Element"
+          },
+          {
+            "name": "Tornado",
+            "level": "6±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Causes a cyclone that batters foes to bits"
+          },
+          {
+            "name": "↓Sonja",
+            "level": "7±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ✰Sonja Element"
+          },
+          {
+            "name": "✰Sonja",
+            "level": "7±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Summons a forest dryad to sprinkle poison dust"
+          },
+          {
+            "name": "✰Genie",
+            "level": "8±0 (innate only)",
+            "target": "All Enemies",
+            "description": "A wind djinn blows your foes away with a twister"
+          }
+        ],
+        "Yellow": [
+          {
+            "name": "TurnYellow",
+            "level": "1±7",
+            "target": "Single Enemy/Ally",
+            "description": "Turn enemy's attribute / ally's attacks yellow"
+          },
+          {
+            "name": "Uplift",
+            "level": "1±7",
+            "target": "Single Enemy",
+            "description": "Cuts out and drops a block of stone on foe"
+          },
+          {
+            "name": "×1Brace",
+            "level": "2±0",
+            "target": "Single Ally",
+            "description": "Heals sprains and yellow status effects"
+          },
+          {
+            "name": "ElectroJolt",
+            "level": "2±6",
+            "target": "Single Enemy",
+            "description": "Shocks foe with an electrical discharge"
+          },
+          {
+            "name": "×1Capsule",
+            "level": "3±0",
+            "target": "Single Ally",
+            "description": "Restores HP (Medium)"
+          },
+          {
+            "name": "AntiGreen",
+            "level": "3±5 (innate only)",
+            "target": "Single Enemy",
+            "description": "Temporarily seals green Elements"
+          },
+          {
+            "name": "Upheaval",
+            "level": "3±5",
+            "target": "Single Enemy",
+            "description": "Spears foe with shards of shattered earth"
+          },
+          {
+            "name": "HiRes",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Temporarily increases your defense"
+          },
+          {
+            "name": "LoRes",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Temporarily decreases opponent's defense"
+          },
+          {
+            "name": "ElectroBolt",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Hurls a lightning bolt down on your opponent"
+          },
+          {
+            "name": "YellowField",
+            "level": "5±3",
+            "target": "Modify Field",
+            "description": "Colors all field attributes yellow"
+          },
+          {
+            "name": "↓Earthquake",
+            "level": "5±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch Earthquake Element"
+          },
+          {
+            "name": "Earthquake",
+            "level": "5±3",
+            "target": "All Enemies",
+            "description": "Crushes foes beneath giant stone pillars"
+          },
+          {
+            "name": "PhysNegate",
+            "level": "6±2 (innate only)",
+            "target": "Single Ally",
+            "description": "Temporarily nullifies foe's physical attacks"
+          },
+          {
+            "name": "↓ThundaStorm",
+            "level": "6±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ThundaStorm Element"
+          },
+          {
+            "name": "ThundaStorm",
+            "level": "6±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Causes a series of thunderbolts to occur"
+          },
+          {
+            "name": "↓Golem",
+            "level": "7±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ✰Golem Element"
+          },
+          {
+            "name": "✰Golem",
+            "level": "7±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Summons an earth giant to stomp on your foes"
+          },
+          {
+            "name": "✰ThundaSnake",
+            "level": "8±0 (innate only)",
+            "target": "All Enemies",
+            "description": "An electric serpent zaps anything in its path"
+          }
+        ],
+        "Black": [
+          {
+            "name": "TurnBlack",
+            "level": "1±7",
+            "target": "Single Enemy/Ally",
+            "description": "Turn foe's attribute / ally's attacks black"
+          },
+          {
+            "name": "GravityBlow",
+            "level": "1±7",
+            "target": "Single Enemy",
+            "description": "Blows away foe with a ball of pure gravity"
+          },
+          {
+            "name": "×1BlackOut",
+            "level": "2±0",
+            "target": "Single Ally",
+            "description": "Removes black status effects"
+          },
+          {
+            "name": "HellSoul",
+            "level": "2±0",
+            "target": "Single Enemy",
+            "description": "Attempts to remove the soul from foe's body"
+          },
+          {
+            "name": "AntiWhite",
+            "level": "3±5 (innate only)",
+            "target": "Single Enemy",
+            "description": "Temporarily seals white Elements"
+          },
+          {
+            "name": "Gravitonne",
+            "level": "3±5",
+            "target": "All Enemies",
+            "description": "Crushes foes with a supergravity field"
+          },
+          {
+            "name": "Genius",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Temporarily increases your magical power"
+          },
+          {
+            "name": "Imbecile",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Temporarily decreases foe's magical power"
+          },
+          {
+            "name": "HellBound",
+            "level": "4±0",
+            "target": "Single Enemy",
+            "description": "Sends your enemy on a trip to hell"
+          },
+          {
+            "name": "Revenge",
+            "level": "5±3 (innate only)",
+            "target": "Single Enemy",
+            "description": "Shifts your status effects onto enemy"
+          },
+          {
+            "name": "↓FreeFall",
+            "level": "5±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch FreeFall Element"
+          },
+          {
+            "name": "FreeFall",
+            "level": "5±3",
+            "target": "Single Enemy",
+            "description": "Drops foe from the sky at supersonic speed"
+          },
+          {
+            "name": "×1Nostrum",
+            "level": "6±0",
+            "target": "Single Ally",
+            "description": "Restores HP (Large)"
+          },
+          {
+            "name": "Diminish",
+            "level": "6±2",
+            "target": "Modify Field",
+            "description": "Temporarily halves Elemental damage"
+          },
+          {
+            "name": "SealAll",
+            "level": "6±2 (innate only)",
+            "target": "Modify Field",
+            "description": "Temporarily stops everyone's Elements"
+          },
+          {
+            "name": "↓BlackHole",
+            "level": "6±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch BlackHole Element"
+          },
+          {
+            "name": "BlackHole",
+            "level": "6±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Sucks everything in the area into a super-vacuum"
+          },
+          {
+            "name": "↓MotherShip",
+            "level": "7±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ✰MotherShip Element"
+          },
+          {
+            "name": "✰MotherShip",
+            "level": "7±1 (innate only)",
+            "target": "All Enemies",
+            "description": "Contacts a spaceship to blast foes to pieces"
+          },
+          {
+            "name": "✰GrimReaper",
+            "level": "8±0 (innate only)",
+            "target": "All Enemies",
+            "description": "Summons Death to wreak doom and destruction"
+          }
+        ],
+        "White": [
+          {
+            "name": "TurnWhite",
+            "level": "1±0",
+            "target": "Single Enemy/Ally",
+            "description": "Turn foe's attribute / ally's attacks white"
+          },
+          {
+            "name": "Revive",
+            "level": "1±7",
+            "target": "Single Ally",
+            "description": "Recovers friend from incapacitated status"
+          },
+          {
+            "name": "PhotonRay",
+            "level": "1±7",
+            "target": "Single Enemy",
+            "description": "Shoots a bright laser beam at your opponent"
+          },
+          {
+            "name": "×1WhiteOut",
+            "level": "2±0",
+            "target": "Single Ally",
+            "description": "Removes white status effects"
+          },
+          {
+            "name": "Meteorite",
+            "level": "2±6",
+            "target": "Single Enemy",
+            "description": "Drops a comet down on an unsuspecting foe's head"
+          },
+          {
+            "name": "RecoverAll",
+            "level": "3±5",
+            "target": "All Allies",
+            "description": "Restores HP (Medium)"
+          },
+          {
+            "name": "AntiBlack",
+            "level": "3±5 (innate only)",
+            "target": "Single Enemy",
+            "description": "Temporarily seals black Elements"
+          },
+          {
+            "name": "PhotonBeam",
+            "level": "3±5",
+            "target": "Single Enemy",
+            "description": "Bombards enemy with an extra-powerful laser"
+          },
+          {
+            "name": "×1Panacea",
+            "level": "4±0",
+            "target": "Single Ally",
+            "description": "Removes all status effects"
+          },
+          {
+            "name": "Purify",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Removes all status effects"
+          },
+          {
+            "name": "StrongMinded",
+            "level": "4±4",
+            "target": "Single Ally",
+            "description": "Temporarily increases your magical defense"
+          },
+          {
+            "name": "WeakMinded",
+            "level": "4±4",
+            "target": "Single Enemy",
+            "description": "Temporarily decreases foe's magical defense"
+          },
+          {
+            "name": "MeteorShower",
+            "level": "4±4",
+            "target": "All Enemies",
+            "description": "Hurls several large asteroids at foes"
+          },
+          {
+            "name": "FullRevival",
+            "level": "5±3 (innate only)",
+            "target": "Single Ally",
+            "description": "Recovers incapacitated status and heals all HP"
+          },
+          {
+            "name": "↓HolyLight",
+            "level": "5±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch HolyLight Element"
+          },
+          {
+            "name": "HolyLight",
+            "level": "5±3",
+            "target": "All Enemies",
+            "description": "Casts a holy circle (annihilates undead)"
+          },
+          {
+            "name": "HolyHealing",
+            "level": "6±2 (innate only)",
+            "target": "All Allies",
+            "description": "Restores all HP and removes status effects"
+          },
+          {
+            "name": "Magnify",
+            "level": "6±2",
+            "target": "Modify Field",
+            "description": "Temporarily increases Element damage by 1.5"
+          },
+          {
+            "name": "MagNegate",
+            "level": "6±2 (innate only)",
+            "target": "Single Ally",
+            "description": "Temporarily nullifies foe's magic attacks"
+          },
+          {
+            "name": "↓UltraNova",
+            "level": "6±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch UltraNova Element"
+          },
+          {
+            "name": "UltraNova",
+            "level": "6±2 (innate only)",
+            "target": "All Enemies",
+            "description": "Causes an explosion of high-density energy"
+          },
+          {
+            "name": "↓Unicorn",
+            "level": "7±0",
+            "target": "Modify Field",
+            "description": "Set trap to catch ✰Unicorn Element"
+          },
+          {
+            "name": "✰Unicorn",
+            "level": "7±1 (innate only)",
+            "target": "All Allies",
+            "description": "Holy horse's prayer raises Def & M.Def"
+          },
+          {
+            "name": "✰Saints",
+            "level": "8±0 (innate only)",
+            "target": "All Enemies/Allies",
+            "description": "Army of angels attacks foes and heals party"
+          }
+        ],
+        "Chrono Cross": [
+          {
+            "name": "Chrono Cross",
+            "level": "8±7 (Serge only)",
+            "target": "All Enemies/Allies",
+            "description": "Long lost Element of 7th color attribute"
+          }
+        ]
+      }
+    }
+  },
+  "design_decisions_open": [],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "The Core Problem: Why AI-Agent Remasters Are Fundamentally Different",
+      "status": "drafted",
+      "drafted_at": "2026-07-19",
+      "word_count_estimate": 2500
+    },
+    {
+      "id": "s2",
+      "title": "Goals & Non-Goals",
+      "status": "drafted",
+      "drafted_at": "2026-07-19",
+      "word_count_estimate": 2500
+    },
+    {
+      "id": "s3",
+      "title": "The Redesign Vision (Phase 3 Design Chapter)",
+      "status": "drafted",
+      "drafted_at": "2026-07-19",
+      "word_count_estimate": 6500
+    },
+    {
+      "id": "s4",
+      "title": "Engine Selection Criteria",
+      "status": "drafted",
+      "drafted_at": "2026-07-19",
+      "word_count_estimate": 2723
+    },
+    {
+      "id": "s5",
+      "title": "Engine Comparison (Godot vs others)",
+      "status": "drafted",
+      "drafted_at": "2026-07-19",
+      "word_count_estimate": 3496
+    },
+    {
+      "id": "s6",
+      "title": "Godot 4 Deep Dive",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 5279
+    },
+    {
+      "id": "s7",
+      "title": "Engine Modifications Needed",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 6574
+    },
+    {
+      "id": "s8",
+      "title": "The Remaster Pipeline",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 5078
+    },
+    {
+      "id": "s9",
+      "title": "AI-Agent Workflow",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 6160
+    },
+    {
+      "id": "s10",
+      "title": "PS1/GBA Era-Specific Challenges",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 5928
+    },
+    {
+      "id": "s11",
+      "title": "Toolchain",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 4939
+    },
+    {
+      "id": "s12",
+      "title": "Chrono Cross Walkthrough (expanded for redesign)",
+      "status": "drafted",
+      "drafted_at": "2026-07-20",
+      "word_count_estimate": 7449
+    },
+    {
+      "id": "s13",
+      "title": "Risks & Open Questions",
+      "status": "drafted",
+      "drafted_at": null,
+      "word_count_estimate": 2000
+    },
+    {
+      "id": "s14",
+      "title": "Success Criteria",
+      "status": "drafted",
+      "drafted_at": "2026-07-20T09:34:00",
+      "word_count_estimate": 5565
+    },
+    {
+      "id": "s15",
+      "title": "Next Steps / Proof-of-Concept Scope",
+      "status": "drafted",
+      "drafted_at": "2026-07-20T10:39:00",
+      "word_count_estimate": 5407
+    }
+  ],
+  "current_section_in_progress": null,
+  "next_section_to_draft": null,
+  "docx_generation": {
+    "pandoc_available": true,
+    "pandoc_path": "C:\\Users\\14239\\AppData\\Local\\Pandoc\\pandoc.exe",
+    "pandoc_version": "3.10",
+    "installed_via": "winget",
+    "installed_at": "2026-07-19",
+    "note": "PATH may not be refreshed in current bash session. Cron jobs (fresh shells) should see it. Cron prompt includes both short and full-path commands as fallback."
+  },
+  "loop_protocol": {
+    "frequency": "hourly",
+    "duration": "indefinite_until_user_stops",
+    "toolsets_required": [
+      "file",
+      "terminal",
+      "web"
+    ],
+    "deliver_to": "this_chat_origin",
+    "deliver_format": "summary_message",
+    "behavior": [
+      "1. Read loop_state.json, loop_memory.md, review.md, remaster_engine_design_spec.md to understand current state",
+      "2. If review.md has decisions that block current work, advance to next section that doesn't need them",
+      "3. Draft or continue the next section following locked design and existing document voice",
+      "4. Append new section to remaster_engine_design_spec.md using unique section header",
+      "5. Update loop_state.json: mark section drafted, advance current_section_in_progress, set next_section_to_draft",
+      "6. Update loop_memory.md with anything learned this loop that future loops need",
+      "7. If a decision is needed, append to review.md (don't make the call)",
+      "8. Send summary message to this chat with what was produced, what's next, and any decisions needed",
+      "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
+    ]
+  },
+  "last_loop_status": "idle",
+  "last_loop_action": "8th consecutive idle loop; document complete at 15/15 sections, 74,293 words, .md MD5 191ed97b9c6ceac24d6448b6308f514d (unchanged across 6 idle loops); docx refreshed (209,957 bytes, MD5 e8a9872ba1bc6b57881c5bd1601bc3f4); 4 non-blocking open questions in review.md all fully resolved into locked_design (Q-5 element_system_ui_locked, Q-6 level_pacing_curve_locked, Q-9 music_handling_locked, Q-11 ng_plus_endings_locked); awaiting user direction"
+}

@@ -1,0 +1,6 @@
+# Godot — ignore Godot's editor cache and import folder
+.godot/
+.import/
+*.translation
+*.gd.uid
+.gd_ignore

@@ -1,0 +1,61 @@
+; Engine configuration file.
+; Remaster Engine — Chrono Cross Fan Remaster
+; Per §6.2 of the design document: Godot 4.3, GDScript only, HD-2D aesthetic.
+;
+; This is the minimum project file for the PoC. Per §15.3, the PoC scope
+; is one character, one map, one combat encounter, one save/load round-trip.
+; No HD-2D art, no audio, no supports, no chapters beyond the first.
+
+config_version=5
+
+[application]
+
+config/name="Remaster Engine - Chrono Cross PoC"
+config/description="A fan-work, clean-room remaster of Chrono Cross (PS1, 1999) using Godot 4.3. Per the design document at remaster_engine_design_spec.md."
+config/version="0.1.0-PoC"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+; Per §7 the autoloads are: Determinism, PartyManager, TechResolver, ChapterController, SaveSystem.
+; PoC scope (§15.3) only includes the foundational ones. Uncomment as the scaffolding-cron adds them.
+;Determinism="*res://scripts/autoloads/determinism.gd"
+;PartyManager="*res://scripts/autoloads/party_manager.gd"
+;TechResolver="*res://scripts/autoloads/tech_resolver.gd"
+;ChapterController="*res://scripts/autoloads/chapter_controller.gd"
+;SaveSystem="*res://scripts/autoloads/save_system.gd"
+
+[debug]
+
+settings/stdout/print_fps=false
+settings/stdout/print_gpu_profile=false
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[dotnet]
+
+; Per §6.3 locked decision: GDScript only, no C# / .NET runtime.
+project/assembly_name=""
+
+[input]
+
+; Per §7 placeholder input map. Will be replaced when scaffolding-cron authors the input subsystem.
+ui_accept={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194309,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194310,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
