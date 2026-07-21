@@ -955,3 +955,26 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - Validation: `python game/tools/validate_data.py` → `3/3 files valid` (kidd, nikki, serge).
 - Validator env workaround: `game/tools/validate_data.py` strips `PYTHONPATH`/`PYTHONHOME` to avoid hermes-agent contamination; project venv at `game/.venv` (Python 3.12) is the correct interpreter. `uv pip install --python game/.venv/Scripts/python.exe rpds-py jsonschema` to make `import jsonschema` succeed under that interpreter.
 - Commit: data file + state update only (unstaged `loop_memory.md` tdd-cron entry that another loop had staged but not committed).
+
+## 2026-07-21 — Loop 33: TDD cron idle (15th consecutive idle)
+
+- Read `cron-jobs/tdd-cron.md`, `loop_state.json`, `game/ISSUES.md`, and ran the full test suite.
+- Test suite: 22/22 pass via `game/tools/run_tests.sh` (1.18s).
+- `game/ISSUES.md`: empty (template only, no open bugs, no resolved history).
+- `tdd_cron.test_queue`: empty (never been populated).
+- Per protocol §"WHEN TO BE IDLE": empty queue + no bugs + all green → log idle, do not invent work.
+- No commit, no test authored, no code modified.
+- `loop_state.json` updated: `total_loops_completed: 31`, `tdd_cron.cycle_count: 2` (was 1 after loop 31), `last_loop_status: "idle"`.
+
+**TDD cron state at end of Loop 33:**
+- Test suite: 22/22 pass
+- `game/ISSUES.md`: empty
+- `tdd_cron.test_queue`: []
+- `last_loop_status`: "idle"
+
+**Options for the user (not for the agent to choose):**
+- **Populate the TDD queue** with concrete failing-test ideas (per §7.2 determinism, §7.3 tech/augmentation, §7.4 element grid, §7.10 combat engine).
+- **Start the PoC (§15.4 10-day implementation order)** — the PoC's first deliverable IS the test suite, so this naturally seeds the queue.
+- **End the TDD cron** — 15 idle loops; if not yet ready for TDD work, the cron can be suspended.
+
+**The next move is the user's.**
