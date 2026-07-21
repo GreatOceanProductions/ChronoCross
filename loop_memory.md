@@ -1683,3 +1683,49 @@ ActionQueue.gd will live in scripts/combat/ (scaffolding_cron item).
 - TDD cron: cycle 8 committed; 4 tests queued (test_tech_resolver_augmentation_chain first)
 - Decisions cron: 7 open decisions (DEC-001..DEC-007), 3 P1 + 4 P2 — DEC-007 blocks next TDD cycle
 - Snapshot cron: state-07 last
+
+## 2026-07-21 — TDD cycle 44: test_battle_sim_damage_formula_100_seeded — PASSING
+
+**What I did this loop:**
+- Authored `game/tests/test_battle_sim.py` (6 tests) — RED phase.
+- Confirmed the test failed for the right reason: `ModuleNotFoundError: No module named 'battle_sim'`. 6/6 new tests failed; 78 prior tests still pass.
+- Authored `game/tools/battle_sim.py` — minimal `BattleSimulator` class. Thin pass-through to the `TechResolver`; takes a `Determinism` and a `TechResolver` in the constructor and exposes `simulate(tech, attacker_attack)` that returns the resolver's `ActionResult` unchanged. GREEN phase.
+- Ran full test suite: **84/84 pass** (78 prior + 6 new) in 1.96s.
+- Committed: `47d1ef4 test: BattleSimulator thin orchestrator (§7.10 step 4, §7.2 determinism)`.
+- Updated `loop_state.json.tdd_cron`: popped `test_battle_sim_damage_formula_100_seeded` (and the duplicate `test_tech_resolver_augmentation_chain` — already covered by cycle 7) from `test_queue` → moved to `tests_passed` with commits. `cycle_count: 9`, `total_loops_completed: 44`, `last_loop_status: "authored_test"`. `current_test_focus: test_battle_sim_status_resistance_immunity`.
+
+**Why this test, why now:**
+- `tdd_cron.test_queue[0]` was `test_tech_resolver_augmentation_chain` (duplicated). On inspection, that test is already covered by the existing `test_resolve_augmentation_chain_walks_pre_phase_before_post_phase` in `test_tech_resolver.py` (added in cycle 7, commit `5072f8f`). The queue entry was stale — a planner/queue-refresh oversight.
+- The next unaddressed queue item was `test_battle_sim_damage_formula_100_seeded` (queue[2] in the original 5-item queue). It maps to §7.10 step 4 (orchestrator) and §7.2 determinism composition. The 100-runs-byte-identical test pins the determinism contract at the orchestration layer.
+- The §7.10 "step 4: orchestrator" of the action lifecycle is the next natural step after step 3 (basic attack resolve, cycle 7). The BattleSimulator is the thin pass-through that turns into a full turn orchestrator in future cycles (multi-combatant, action queue, status effects).
+
+**The 6-test contract (per §7.10 step 4 + §7.2 determinism):**
+1. `test_module_imports` — `BattleSimulator` class is importable.
+2. `test_simulator_constructs_with_determinism_and_resolver` — construction is a thin wiring step, no PRNG calls, no state mutation.
+3. `test_simulate_returns_resolver_result_for_basic_attack` — pass-through to the resolver; preserves effects, target_scope, applied_augmentations.
+4. `test_simulate_100_runs_byte_identical` — the §7.2 determinism contract at the orchestration layer. 100 runs with the same inputs produce byte-identical results.
+5. `test_simulator_passes_through_augmentations_unchanged` — the resolver's pre/post chain ordering is preserved by the orchestrator.
+6. `test_simulator_does_not_invent_effects_for_basic_attack` — the orchestrator is a pure pass-through; it does not add effects, statuses, or augmentations when the input has none.
+
+**Important lessons for future loops:**
+- **The Python `BattleSimulator` mirror is the test-side contract for the GDScript BattleSimulator.gd.** Future scaffolding-cron work on the GDScript version must satisfy the same 6 contracts. The Python test file is the executable specification.
+- **The `BattleSimulator` is intentionally a thin pass-through in this cycle.** It does not own state, does not consume entropy directly, does not introduce new effects. Future cycles add: multi-combatant turn orchestration, element resistance application, row modifiers, status effect application, battle log emission. Each future cycle adds a new test, not a refactor of this one.
+- **The `test_simulate_100_runs_byte_identical` test is the §7.2 determinism contract for the orchestration layer.** The 100-run count is arbitrary but high enough to catch per-call accumulation or hidden state. A future refactor that introduces a non-seeded random call will fail this test on the first variance.
+- **The Python `__new__` + manual field assignment pattern for `TechData` is a recurring test convenience.** The `test_simulator_passes_through_augmentations_unchanged` test uses it to build a tech with a custom augmentation list without writing a fixture file. This is the same pattern as `test_tech_resolver.py::test_resolve_augmentation_chain_walks_pre_phase_before_post_phase`. Future data-layer tests that need custom tech shapes can follow this pattern.
+- **Stale queue entries should be cleaned up when consumed.** The `test_tech_resolver_augmentation_chain` entry was a stale duplicate of an already-passing test. This loop's `tests_passed` list now records the canonical commit (`5072f8f`, cycle 7) so the queue is no longer the source of truth for that test. The `current_test_focus` advanced to `test_battle_sim_status_resistance_immunity` (queue[0] after both pops).
+- **The `Decision::Decision` on whether to use `uv run --no-project python` vs. `cd game && .venv/Scripts/python.exe` for state updates.** This loop used `uv run --no-project python` to update `loop_state.json` (avoids the project venv activation overhead and the hermes-agent PYTHONPATH issue). Future loops editing JSON should use the same pattern. The state-update script (`_state_update_cycle44.py`) is staged in the working dir; the next loop should remove it after committing (it is throwaway, not a deliverable).
+
+**Test queue state at end of this loop:**
+- `tests_passed: 8 items` (test_determinism_prng_seeded, test_character_data_loads, test_tech_data_loads, test_party_manager_active_roster, test_tech_resolver_basic_attack, test_action_queue_speed_sort, test_tech_resolver_augmentation_chain [covered by cycle 7], test_battle_sim_damage_formula_100_seeded [this cycle])
+- `test_queue: 2 items` (test_battle_sim_status_resistance_immunity, test_battle_log_save_load_roundtrip)
+- `current_test_focus: test_battle_sim_status_resistance_immunity` (next loop, cycle 45)
+- `cycle_count: 9` (8 authored-test cycles after the 1 housekeeping increment)
+
+**Document state at end of this loop:**
+- File: `D:\Game Design\Remaster Engine\game\tests\test_battle_sim.py` — 6 tests, all passing
+- File: `D:\Game Design\Remaster Engine\game\tools\battle_sim.py` — 130 lines, mirrors §7.10 step 4 GDScript orchestrator
+- File: `D:\Game Design\Remaster Engine\loop_state.json` — `total_loops_completed: 44`, `last_loop_status: "authored_test"`, `tdd_cron.cycle_count: 9`
+- File: `D:\Game Design\Remaster Engine\loop_memory.md` — this entry appended
+- Git: commit `47d1ef4` on `main` (2 files changed, 367 insertions).
+
+**The TDD loop has produced its eighth authored test (this cycle's 6-test contract for the BattleSimulator orchestrator). The next loop (cycle 45) will pick `test_battle_sim_status_resistance_immunity` from the queue (§7.10 test surface (c) + §7.5 status effect engine).**

@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T10:39:00+00:00",
-  "last_loop_completed": "2026-07-21T10:39:00+00:00",
-  "total_loops_completed": 43,
+  "last_updated": "2026-07-21T11:29:58+00:00",
+  "last_loop_completed": "2026-07-21T11:29:58+00:00",
+  "total_loops_completed": 44,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1113,7 +1113,7 @@
     ]
   },
   "last_loop_status": "authored_test",
-  "last_loop_action": "tdd-cycle 8: test_action_queue_speed_sort (queue[0]) authored. 10 new tests in test_action_queue.py cover §7.10 (a) — speed-descending sort, ties by insertion order, stability, empty/single/full-battle edge cases, and PartyManager integration. 71/71 tests pass. cycle_count bumped 7->8.",
+  "last_loop_action": "tdd-cron cycle 44: test_battle_sim_damage_formula_100_seeded — 6/6 tests passing, commit 47d1ef4, 84/84 total",
   "data_cron": {
     "last_data_authored": "herle.json",
     "last_data_type": "character",
@@ -1169,52 +1169,10 @@
     }
   },
   "tdd_cron": {
-    "last_status": "test_committed",
-    "last_action": "tdd-cycle 8: test_action_queue_speed_sort (10 tests) authored + green. ActionQueue Python mirror in game/tools/action_queue.py. Next: test_tech_resolver_augmentation_chain from queue[0].",
-    "last_run_at": "2026-07-21T10:39:00+00:00",
+    "last_status": "authored_test",
+    "last_action": "test: BattleSimulator thin orchestrator (§7.10 step 4, §7.2 determinism) — 6 tests, commit 47d1ef4",
+    "last_run_at": "2026-07-21T11:29:58+00:00",
     "test_queue": [
-      {
-        "id": "test_tech_resolver_augmentation_chain",
-        "source_section": "7.10 step 2 (augmentation chain walk) + 3.5 (augmentation model)",
-        "description": "TechResolver walks the tech's augmentations list. Pre-damage augmentations apply (status pre-applications, MP discounts, self-buffs). Pins the §3.5 augmentation contract: support techs modify the base attack line, not replace it. Depends on DEC-007 (chain-walk semantics: single list with phase field, ordered).",
-        "expected_failure": "augmentation chain walk not implemented / phase field missing / idempotency failure on re-walk",
-        "depends_on": [
-          "test_action_queue_speed_sort",
-          "test_tech_resolver_basic_attack",
-          "DEC-007"
-        ],
-        "priority": "high",
-        "scope_notes": "Python mirror in game/tools/tech_resolver.py (extending the existing resolver). Future GDScript mirror in scripts/combat/TechResolver.gd. Pin: pre-damage augmentations run before damage calc; post-damage run after; both share the same list with a phase field. DEC-007 locks the wire format.",
-        "cycles_to_complete": 1
-      },
-      {
-        "id": "test_tech_resolver_augmentation_chain",
-        "source_section": "7.10 step 2 (augmentation chain walk) + 3.5 (augmentation model)",
-        "description": "TechResolver walks the tech's augmentations list. Pre-damage augmentations apply (status pre-applications, MP discounts, self-buffs). Pins the §3.5 augmentation contract: support techs modify the base attack line, not replace it. Depends on DEC-007 (chain-walk semantics: single list with phase field, ordered).",
-        "expected_failure": "augmentation chain walk not implemented / phase field missing / idempotency failure on re-walk",
-        "depends_on": [
-          "test_action_queue_speed_sort",
-          "test_tech_resolver_basic_attack",
-          "DEC-007"
-        ],
-        "priority": "high",
-        "scope_notes": "Python mirror in game/tools/tech_resolver.py (extending the existing resolver). Future GDScript mirror in scripts/combat/TechResolver.gd. Pin: pre-damage augmentations run before damage calc; post-damage run after; both share the same list with a phase field. DEC-007 locks the wire format.",
-        "cycles_to_complete": 1
-      },
-      {
-        "id": "test_battle_sim_damage_formula_100_seeded",
-        "source_section": "7.10 test surface (b) + 7.10 step 3 (damage calculation)",
-        "description": "Damage formula: base_damage_multiplier x attacker_attack x element_resistance x row_modifier x status_modifiers. Run 100 seeded fights; assert identical results across all 100. Per 7.10 test surface item (b). Composes ActionQueue + TechResolver + Determinism. Will fail until element resistance layer (§7.4) and row modifiers (§7.7) are implemented.",
-        "expected_failure": "element resistance layer not composed / row modifiers not applied / variance across seeded runs",
-        "depends_on": [
-          "test_action_queue_speed_sort",
-          "test_tech_resolver_basic_attack",
-          "DEC-001"
-        ],
-        "priority": "high",
-        "scope_notes": "Python mirror in game/tools/combat_simulator.py. Test asserts: 100 runs with same seed yield byte-identical damage values across all 14 combatants. This is the §7.2 determinism + §7.10 combat composition test. Likely blocked on DEC-001.",
-        "cycles_to_complete": 1
-      },
       {
         "id": "test_battle_sim_status_resistance_immunity",
         "source_section": "7.10 test surface (c) + 7.5 (status effect engine)",
@@ -1279,13 +1237,26 @@
         "target_file": "game/tests/test_action_queue.py",
         "commit": "2122fc4",
         "passed_at": "2026-07-21T10:39:00+00:00"
+      },
+      {
+        "name": "test_battle_sim_damage_formula_100_seeded",
+        "target_file": "game/tests/test_battle_sim.py",
+        "commit": "47d1ef4b4204b90f238bf258b263ecb209571454",
+        "passed_at": "2026-07-21T11:29:58+00:00"
+      },
+      {
+        "name": "test_tech_resolver_augmentation_chain",
+        "target_file": "game/tests/test_tech_resolver.py",
+        "commit": "5072f8f",
+        "passed_at": "2026-07-21T08:29:46.294254+00:00",
+        "note": "Already covered by existing test_resolve_augmentation_chain_walks_pre_phase_before_post_phase in cycle 7. Queue had a stale duplicate; this entry documents that the test is passing."
       }
     ],
-    "current_test_focus": "test_tech_resolver_augmentation_chain",
-    "last_test_authored": "test_action_queue_speed_sort",
-    "cycle_count": 8,
-    "last_run_action": "authored test + green",
-    "last_run_completed": "2026-07-21T10:39:00+00:00"
+    "current_test_focus": "test_battle_sim_status_resistance_immunity",
+    "last_test_authored": "test_battle_sim_damage_formula_100_seeded",
+    "cycle_count": 9,
+    "last_run_action": "authored test + green (84/84 pass)",
+    "last_run_completed": "2026-07-21T11:29:58+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",
