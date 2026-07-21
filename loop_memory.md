@@ -1998,3 +1998,5 @@ And from the task header:
 - §7.7 PartyManager active roster add/remove + capacity 6 (§3.3). The base Python mirror `game/tools/party_manager.py` already has `active_roster`; this cycle extends it with the `add_member`/`remove_member` API.
 - The queue entry says: "max capacity is 6 (the §3.3 active party size, a hard ceiling); adding beyond capacity raises; removing a non-member raises; the order of add calls determines turn-order priority (§7.7 'order of add is the order in battle')".
 - This is a low-risk cycle: the existing `add_base`/`remove_base` API from cycle 38 is the seed. The test will assert the new API, and the minimum implementation is to add the API methods.
+
+- Snapshot tick 54: state-07 created (0.7 MB), 4 commits pushed (1fa7778..b008a00), state file commit 37ec849 also pushed. Ring buffer 8/8 slots in use.
