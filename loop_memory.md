@@ -1,4 +1,3 @@
-bash.exe: warning: could not find /tmp, please create!
 # Loop Memory — Remaster Engine Design Spec
 
 Cumulative memory across cron loops. Each loop appends to this file. Future loops read this to maintain continuity.
@@ -1251,3 +1250,102 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - 1 commit `e8fdd0c` made (state-07 + CharacterData.gd + 2 godot test wrappers) and pushed; 11 unpushed commits in total (d90ef8c..e8fdd0c) — all pushed to origin/main.
 - snapshot_cron.last_push updated to e8fdd0c / 11 commits / 2026-07-21T07:05:55Z.
 
+
+## 2026-07-21 — Loop 37: TDD cycle 5 (bug fix + test_tech_data_loads)
+
+**Bug fix first (per cron protocol §9.4 error-handling extension):**
+- Pre-existing failure: `tests/test_character_data_godot.py::test_godot_boots_and_passes` was failing because `game/tests/test_character_data_godot.gd` had a GDScript parse error in Godot 4.3.
+- Two root causes:
+  1. The file was poisoned with 4 lines of terminal stderr (`bash.exe: warning: could not find /tmp, please create!`) prepended as literal content by an earlier write operation. The GDScript parser saw this garbage as a class-body identifier and refused to load.
+  2. Two `var x: Array[String] = []` typed-array declarations in class-body variables — syntax added in Godot 4.4, not present in 4.3. Replaced with untyped `Array` + `String()` cast on append.
+- Commit: `f3fc3a3 fix: Godot 4.3 parse errors in test_character_data_godot.gd`
+- After fix: 37/37 tests pass (was 36/37 before).
+
+**TDD cycle 5 (the main work):**
+- Authored `test_tech_data_loads` in `game/tests/test_tech_data.py` (7 tests).
+- Created supporting artifacts (RED -> GREEN):
+  - `game/data/schemas/tech.schema.json` — draft-07, mirrors character.schema.json discipline, closed enums for element/target_scope/slot_kind/augmentation kind/effect kind.
+  - `game/data/techs/dash_and_slash.json` — Serge's tier-1 locked basic attack, simplest possible Tech shape (no augmentations, one DAMAGE effect).
+  - `game/tools/tech_data.py` — Python mirror, mirrors character_data.py pattern.
+  - `game/tools/validate_data.py` — added "techs" -> "tech" to DIR_TO_SCHEMA so the §6.5 schema-validation pipeline picks up tech files automatically.
+- Commit: `c2ef1d8 test: TechData typed loader for tech JSON (§7.3, §15.4 step 2)`
+- After: 44/44 tests pass (37 prior + 7 new).
+- Validator: 5/5 files valid (4 characters + 1 tech).
+
+**Important lessons for future loops:**
+- **The `bash.exe: warning: could not find /tmp, please create!` line is a recurring file poisoner.** I have now seen this twice in two consecutive cycles (cycle 36 poisoned test_character_data_godot.gd, cycle 37 poisoned validate_data.py). The pattern: when the `patch` tool (or some other write operation that reads via `read_file` then writes back) runs in the cron environment, the terminal's stderr `bash.exe: warning:` line gets captured and prepended as literal file content. The file looks fine in `read_file` output (which has the same line at the top), but on disk the file actually contains it. Mitigation: after any `patch` operation, do a defensive `head -1 <file> | od -c` to confirm the file starts with the expected character (e.g., `e` for `extends`, `"` for Python docstring, `class_name` for GDScript). If it starts with `b`, strip the line. The same problem affected validate_data.py in this cycle, requiring an in-loop fix before tests could pass.
+- **The `patch` tool reports false "Post-write verification failed" errors.** Three of my four `patch` calls in this cycle returned errors claiming the on-disk content differed from the intended write. All three had in fact persisted the change correctly — I verified with subsequent `read_file` / `grep` / `head` calls. The verification step is comparing the post-write content against the intended write and the comparison is checking line-ending normalization, not actual content. The error is a false positive from the post-write verification. Future loops should NOT trust the "patch did not persist" message — verify with an independent read before retrying, since retrying will write twice.
+- **The Godot 4.3 typed-array limitation in class-body `var` declarations is a real spec.** The §6.4 GDScript subset committed to static typing, but class-body typed-array declarations (`var x: Array[String] = []`) are a 4.4+ feature. The fix is to use untyped `Array` at class-body level and cast elements with `String()` on append. The lesson: the GDScript test wrappers should keep their typed arrays inside `_run_all_checks()`-style functions (where the parser is permissive) rather than at class-body level. Future GDScript test scripts in this project should follow the same pattern.
+- **The §15.4 step-2 contract mirrors step-1 exactly.** Step 1 (CharacterData) was: schema + JSON file + Python mirror + pytest. Step 2 (TechData) was: schema + JSON file + Python mirror + pytest. The pattern is now established and reusable. Future data-layer steps (elements, maps, chapters) can follow the same 4-file recipe. The DIR_TO_SCHEMA entry in validate_data.py is the only addition per data type.
+- **The integration test (`test_load_serge_tier1_via_base_id`) is the first cross-data-layer test.** It loads Serge's CharacterData, reads his `tier_1_tech` field, and uses that to find and load the matching TechData. This is the §6.5 "data layer composes" test. Future data-layer steps should add at least one cross-layer integration test to prove the layers wire together.
+- **Word count discipline: 7 tests in one file is a sweet spot.** The CharacterData test file has 8 tests; the TechData test file has 7 tests. Both files are under 200 lines. Future data-layer test files should target 6-9 tests per file — enough to cover load/missing-file/integration/schema-validation, few enough to keep the test file readable.
+- **The `bash.exe: warning:` poisoning also affects `validate_data.py` in this cycle.** The cycle-36 memory entry did not call this out as a risk for non-GDScript files, but the same write-time stderr capture affects Python files too. The defense (head -1 + od -c check) should be applied to ALL file types after a `patch` operation, not just GDScript.
+- **TDD cycles can include bug fixes as their first commit.** The cron protocol says "one test per cycle, one commit per cycle" but the error-handling extension (§9.4) explicitly allows fixing unaddressed bugs as a side effect. The fix commit (`f3fc3a3`) was not the "one test" of the cycle — the test was `c2ef1d8`. The fix was a precondition for the test to even run (the failing GDScript test would have polluted the test suite state). This is a legitimate two-commit cycle: one fix, one test+implementation.
+
+**Document state at end of Loop 37:**
+- File: `D:\Game Design\Remaster Engine\remaster_engine_design_spec.md` — 74,293 words, 15 sections, structurally complete (unchanged)
+- File: `D:\Game Design\Remaster Engine\remaster_engine_design_spec.docx` — 210 KB (unchanged since Loop 17)
+- File: `D:\Game Design\Remaster Engine\loop_state.json` — loop counter at 37, `last_loop_status: "authored_test"`, `tdd_cron.cycle_count: 5`
+- File: `D:\Game Design\Remaster Engine\loop_memory.md` — cumulative history of 37 loops
+- File: `D:\Game Design\Remaster Engine\game\tests\test_tech_data.py` — 7 tests, all passing
+- File: `D:\Game Design\Remaster Engine\game\data\techs\dash_and_slash.json` — first tech fixture
+- File: `D:\ Game Design\Remaster Engine\game\data\schemas\tech.schema.json` — second schema in the project
+- Test suite: 44/44 passing (37 prior + 7 new tech_data tests)
+- `tdd_cron.test_queue`: 2 items remaining (test_party_manager_active_roster, test_tech_resolver_basic_attack)
+- `tdd_cron.tests_passed`: 3 items (test_determinism_prng_seeded, test_character_data_loads, test_tech_data_loads)
+
+**Next cycle options for the TDD cron:**
+- Pick the next test from the queue: `test_party_manager_active_roster` (§15.4 step 3, the PartyManager autoload).
+- Continue advancing through the §15.4 10-day PoC order (party manager is the natural next step after character + tech data).
+- TDD cycle 5 is done. The data layer (step 1: CharacterData, step 2: TechData) is the PoC's first two deliverables. Step 3 (PartyManager) is the first *behavior* deliverable — a `Node` autoload that holds the active 6-character party, supports add/remove of bases, and queries support slot state. This is the §7.7 commitment.
+
+## 2026-07-21 — Loop 38: TDD cycle 6 (test_party_manager_active_roster)
+
+**What I did this run:**
+- Read `cron-jobs/tdd-cron.md`, `loop_state.json`, `loop_memory.md`, `game/ISSUES.md`, ran the test suite baseline (44/44 pass), reviewed the `tdd_cron` queue.
+- Queue item: `test_party_manager_active_roster` (target `game/tests/test_party_manager.py`, spec §15.4 step 3, §7.7 6-character party formation). This is the first *behavior* deliverable in the PoC's §15.4 10-day order — a `Node` autoload (in Godot 4) that owns the active 6-character party, supports add/remove, and exposes a `slot_unlocked` event. The Python mirror follows the `character_data.py` / `tech_data.py` convention.
+- **RED**: authored `game/tests/test_party_manager.py` (9 tests). Confirmed RED: 9/9 failed with `ModuleNotFoundError: No module named 'party_manager'`. The test was exercising real behavior, not a stub.
+- **GREEN**: created `game/tools/party_manager.py` (~120 lines) with the `PartyManager` class:
+  - 6-slot list, `max_size = 6`, `active_count` starts at 0
+  - `add_base(id)` → fills next slot, records `(slot_index, id)` in `slot_unlocked_events`, raises ValueError on 7th add
+  - `remove_base(id)` → removes, shifts later bases forward, raises ValueError on unknown id
+  - `active_roster()` → list of recruited (non-None) ids in slot order
+- **Caught a design bug during GREEN**: my initial impl had `active_count` starting at 3 (interpreting §3.9's "3→6" as a within-game progression). The test added 6 bases and got ValueError on the 4th. Re-read §3.9: "active party size 6, up from original 3" — the 3 is the *original Chrono Cross* max, not a within-game starting count. The redesign grows from 0 (chapter 1: Serge alone) to 6 (end-game: full party). Fixed both impl and test. RED→GREEN after fix.
+- All 53/53 tests pass (44 prior + 9 new).
+- Updated `loop_state.json`: removed `test_party_manager_active_roster` from queue, added to `tests_passed`, bumped `cycle_count` to 6, `total_loops_completed` to 38, refreshed timestamps.
+- The 2 prior `loop_state.json` and `loop_memory.md` pending diffs (from cycle 5 housekeeping that wasn't committed) are now resolved into the same diff as this cycle's state updates, per the data-cron's "git add -A picks up pending housekeeping" pattern.
+
+**Commit message:**
+```
+test: PartyManager active roster and slot-unlock growth (§7.7, §15.4 step 3)
+
+Adds the 6-character party formation system per §3.9 / §7.7. The
+Python mirror (`tools/party_manager.py`) exercises the contract
+that a future GDScript `PartyManager.gd` autoload must satisfy:
+6-slot total, max-size cap, add/remove with shift-on-remove, and
+a slot-unlocked event list (the Python mirror of GDScript signals).
+9 tests cover: starts empty, add fills next slot, growth from 1→6
+across chapters, 7th add raises, remove shifts forward, remove
+unknown raises, slot_unlocked event fires per add.
+
+Refs: §7.7 6-character party formation, §3.9 active party size,
+      §7.6 form-change logic (remove+add for Serge→Lynx swap)
+```
+
+**TDD discipline observations:**
+- **The "3→6" framing in §3.9 is a design-comparison, not a within-game progression.** The original Chrono Cross had a 3-character party max; the redesign commits to 6. The in-game progression is 1→6 (Serge alone in chapter 1 → full party by end-game). Misreading this would have made the PartyManager non-functional for chapters 1-3 (where 4-6 adds should not raise).
+- **The Python mirror pattern continues to pay off.** Two prior cycles established `character_data.py` and `tech_data.py`; cycle 6 follows the same shape. The convention is now: docstring cites the §15.4 step + §7.x section, `from_X(path)` factory returns a typed wrapper, edge cases (missing file, malformed input) raise loudly. Future cycles (TechResolver, etc.) will follow the same pattern.
+- **The §7.6 form-change primitive is now testable.** `remove_base("serge")` + `add_base("lynx")` is the shape of the chapter-4 form-change scene. The test `test_remove_base_shifts_remaining_bases` locks in the shift-forward behavior that the scene will rely on. A future test (cycle N+1 or so) for the form-change state machine will exercise the full sequence.
+- **The `slot_unlocked_events` list mirrors a GDScript signal.** The GDScript `PartyManager.gd` will declare `signal slot_unlocked(index: int, combatant: Combatant)`. The Python list is a "recorded event log" — not a true signal — but the test interface is the same: assert that exactly N events fire with the right (slot, id) tuples. The Godot-runtime test (a future scaffolding_cron item, mirroring `test_character_data_godot.gd`) will subscribe to the real signal.
+- **Bug-as-feature discovered, not silenced.** My initial impl had a §3.9 misread. I caught it on the failing test, not in `ISSUES.md` afterwards. The fix is in the commit (impl + test both updated). No silent conflict resolution, no design-drift — the §3.9 misread is a *learning*, not a bug to hide.
+
+**State at end of run:**
+- `game/tests/test_party_manager.py` — 9 tests, all passing
+- `game/tools/party_manager.py` — ~120 lines, mirrors character_data.py / tech_data.py discipline
+- 53/53 tests pass via `game/tools/run_tests.sh`
+- `loop_state.json`: `tdd_cron.cycle_count: 6`, queue has 1 item left (`test_tech_resolver_basic_attack`)
+- `loop_state.json`: `total_loops_completed: 38`, `last_loop_status: "authored_test"`
+- `game/ISSUES.md`: still empty
+- `commit`: pending (about to commit with `git add -A` per data-cron housekeeping pattern)
+
+**Next cycle target:** `test_tech_resolver_basic_attack` (§15.4 step 5, §7.10 combat engine, §3.5 basic attack line + augmentation). The combat step that resolves "Serge uses Dash and Slash" into a damage roll + element + (future) augmentation effects. The Python mirror will be `game/tools/tech_resolver.py`, mirroring the prior three data-layer deliverables.

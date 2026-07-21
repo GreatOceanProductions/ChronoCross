@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T08:30:00+00:00",
-  "last_loop_completed": "2026-07-21T08:30:00+00:00",
-  "total_loops_completed": 36,
+  "last_updated": "2026-07-21T07:52:11.326450+00:00",
+  "last_loop_completed": "2026-07-21T07:52:11.326450+00:00",
+  "total_loops_completed": 38,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1113,7 +1113,7 @@
     ]
   },
   "last_loop_status": "authored_test",
-  "last_loop_action": "TDD cycle 34: authored 'test_determinism_prng_seeded' → 27/27 pass (commit 34aa84f). test_queue advanced to next item: test_character_data_loads",
+  "last_loop_action": "TDD cycle 6: authored test_party_manager_active_roster -> 53/53 pass. test_queue advanced to next item: test_tech_resolver_basic_attack",
   "data_cron": {
     "last_data_authored": "glenn.json",
     "last_data_type": "character",
@@ -1169,21 +1169,9 @@
   },
   "tdd_cron": {
     "last_status": "authored_test",
-    "last_action": "TDD cycle 35: authored 'test_character_data_loads' -> 34/34 pass (commit 8085a0d). test_queue advanced to next item: test_tech_data_loads",
-    "last_run_at": "2026-07-21T06:30:00+00:00",
+    "last_action": "TDD cycle 6: authored test_party_manager_active_roster -> 53/53 pass. test_queue advanced to next item: test_tech_resolver_basic_attack",
+    "last_run_at": "2026-07-21T07:52:11.326450+00:00",
     "test_queue": [
-      {
-        "name": "test_tech_data_loads",
-        "target_file": "game/tests/test_tech_data.py",
-        "expected_failure": "TechData.gd missing / fails to load element JSON",
-        "spec_ref": "§15.4 step 2, §7.3 Tech + TechAugmentation data model"
-      },
-      {
-        "name": "test_party_manager_active_roster",
-        "target_file": "game/tests/test_party_manager.py",
-        "expected_failure": "PartyManager.gd autoload missing / cannot add/remove base",
-        "spec_ref": "§15.4 step 3, §7.7 6-character party formation"
-      },
       {
         "name": "test_tech_resolver_basic_attack",
         "target_file": "game/tests/test_tech_resolver.py",
@@ -1203,13 +1191,25 @@
         "target_file": "game/tests/test_character_data.py",
         "commit": "8085a0d",
         "passed_at": "2026-07-21T06:30:00+00:00"
+      },
+      {
+        "name": "test_tech_data_loads",
+        "target_file": "game/tests/test_tech_data.py",
+        "commit": "c2ef1d8",
+        "passed_at": "2026-07-21T07:17:00+00:00"
+      },
+      {
+        "name": "test_party_manager_active_roster",
+        "target_file": "game/tests/test_party_manager.py",
+        "commit": "PENDING_THIS_CYCLE",
+        "passed_at": "2026-07-21T07:52:11.326450+00:00"
       }
     ],
-    "current_test_focus": "test_tech_data_loads",
-    "last_test_authored": "test_character_data_loads",
-    "cycle_count": 4,
+    "current_test_focus": "test_tech_resolver_basic_attack",
+    "last_test_authored": "test_party_manager_active_roster",
+    "cycle_count": 6,
     "last_run_action": "authored test + green",
-    "last_run_completed": "2026-07-21T06:30:00+00:00"
+    "last_run_completed": "2026-07-21T07:52:11.326450+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",
