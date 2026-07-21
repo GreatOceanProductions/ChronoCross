@@ -15,13 +15,11 @@ same determinism contract. Both implementations must satisfy:
   3. Re-seeding clears all derived PRNGs.
   4. Different global seeds → different sequences for the same tag.
 
-The seed-derivation formula is:
-    derived_seed = stable_hash((global_seed, tag)) mod 2**32
-where stable_hash is the standard tuple hash masked to a 32-bit
-unsigned integer. The GDScript version uses
-`hash([_seed, tag])` from the §7.2 reference; the Python version
-uses a stable cross-process equivalent so both sides produce the
-same derived stream for the same inputs.
+The seed-derivation formula is process-independent: FNV-1a 32-bit
+over the tag's UTF-8 bytes, then mixed with the global seed via
+Knuth's multiplicative hash. The GDScript side uses `hash([_seed, tag])`
+which is also process-independent; the two need not match numerically
+but the *contract* (independence, determinism, re-seed behavior) must.
 """
 from __future__ import annotations
 
@@ -32,18 +30,24 @@ from typing import Dict, Hashable
 def _stable_seed(global_seed: int, tag: Hashable) -> int:
     """Derive a 32-bit PRNG seed from (global_seed, tag).
 
-    Mirrors the GDScript `hash([_seed, tag])` from the §7.2 reference
-    implementation: tuple of two values, hashed, masked to 32 bits.
-    Python's built-in hash() is randomized per-process, so we use
-    a stable algorithm (the same as `hash` of a 2-tuple of ints in
-    CPython would, modulo the PYTHONHASHSEED salt).
+    CRITICAL: this function MUST be process-independent. The §7.2
+    determinism contract says "the seed is a debug surface — a bug
+    report includes the seed and the action count" and the
+    test-replay rig must reproduce the exact outcome across processes.
+    Python's built-in hash() is salted by PYTHONHASHSEED and varies
+    per process, so we use FNV-1a 32-bit over the tag's bytes instead.
     """
-    # Stable algorithm: combine via modular arithmetic on the 32-bit
-    # representation. This is the same math the GDScript hash() does
-    # for a small array of two ints.
-    tag_int = hash(tag) & 0xFFFFFFFF
+    if isinstance(tag, str):
+        tag_bytes = tag.encode("utf-8")
+    else:
+        tag_bytes = repr(tag).encode("utf-8")
+    # FNV-1a 32-bit — stable across processes, no salt, no dependencies.
+    tag_int = 0x811C9DC5
+    for b in tag_bytes:
+        tag_int ^= b
+        tag_int = (tag_int * 0x01000193) & 0xFFFFFFFF
+    # Mix the global seed in via Knuth's multiplicative hash.
     combined = (global_seed * 2654435761 + tag_int) & 0xFFFFFFFF
-    # Mix again so tag-only variations don't collide on a single bit
     return ((combined ^ (combined >> 16)) * 2246822519) & 0xFFFFFFFF
 
 
