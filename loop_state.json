@@ -1201,7 +1201,7 @@
       {
         "name": "test_party_manager_active_roster",
         "target_file": "game/tests/test_party_manager.py",
-        "commit": "PENDING_THIS_CYCLE",
+        "commit": "5c74a4d",
         "passed_at": "2026-07-21T07:52:11.326450+00:00"
       }
     ],
