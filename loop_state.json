@@ -13,9 +13,9 @@
     "engine": "Godot 4",
     "autonomy_model": "Mostly autonomous with design gates",
     "worked_example": "Chrono Cross",
-    "phase_1": "Faithful Remaster — modern tech, original content/flow/balance",
-    "phase_2": "Stabilization Audit — evaluate every vestigial design choice on its own merits",
-    "phase_3": "Modifications — apply Phase 2 audit + new content/features + the redesign described below",
+    "phase_1": "Faithful Remaster \u2014 modern tech, original content/flow/balance",
+    "phase_2": "Stabilization Audit \u2014 evaluate every vestigial design choice on its own merits",
+    "phase_3": "Modifications \u2014 apply Phase 2 audit + new content/features + the redesign described below",
     "visual_approach": "HD-2D style (2D characters over 2D/2.5D backgrounds)",
     "modifiability_architecture": "Phase 1 requirement, not Phase 3 retrofit",
     "content_accuracy_method": "Multi-source: emulation files + YouTube playthroughs + wikis + scripts + related-work context",
@@ -36,7 +36,7 @@
     "save_file_format": "Text .tres (ResourceSaver default). Diffable, lintable, easy to migrate. Confirmed.",
     "cinematic_system": "Data only (list of CinematicBeat resources: DIALOG, CAMERA_MOVE, ANIMATION, FLAG_SET, PARTY_CHANGE). No GDScript beat hook. Confirmed.",
     "source_acquisition": "Fully automated. No license gate. The project is purely a fan project without commercial purpose, used for skill development. The agent may complete these actions (assuming they don't require financial payment).",
-    "asset_extraction_tooling": "Python with Pillow (TIM→PNG), ffmpeg (audio/video), timidity++ (MIDI→OGG). Confirmed.",
+    "asset_extraction_tooling": "Python with Pillow (TIM\u2192PNG), ffmpeg (audio/video), timidity++ (MIDI\u2192OGG). Confirmed.",
     "translation_pipeline_granularity": "One script per character / per tech (extreme granularity). Confirmed.",
     "visual_regression_baselines": "Large set: every scene, 200+ baselines, ~500 MB committed to the project. D: drive has the space. Confirmed.",
     "phase_2_audit_trigger": "30-day stability gate: Phase 1 must be faithfully remastered and stable for 30 consecutive days of agent playthrough before Phase 2 begins. Confirmed.",
@@ -47,21 +47,21 @@
     "mid_loop_interrupt_handling": "When the user interrupts with an out-of-band message, complete the current task and then respond to the user. Prioritizes task completion over immediate user communication. Confirmed.",
     "memory_file_retention": "Append forever, no rotation. Revisit when the file exceeds 100 KB. Confirmed.",
     "ps1_emulator_default": "DuckStation, configurable via REMASTER_PS1_EMULATOR env var. Confirmed.",
-    "color_conversion_strategy": "Direct expansion (5-bit → 8-bit by left-shifting) for sprites/UI; perceptual (Lab/OKLab) for backgrounds. Confirmed.",
+    "color_conversion_strategy": "Direct expansion (5-bit \u2192 8-bit by left-shifting) for sprites/UI; perceptual (Lab/OKLab) for backgrounds. Confirmed.",
     "seq_to_ogg_tool": "timidity++. Confirmed.",
     "form_change_visual": "2D everywhere. No 3D model interpolation. Confirmed.",
     "no_game_over_flag_timing": "Keep the original's trigger (after final boss's death animation). Confirmed for Phase 1 faithfulness.",
     "visual_approach_locked": "2D sprite for all named characters, alongside the combat sprites (in 2D battle). Backgrounds, scenes, etc. from the original game's beautiful 2D environments. No 3D module. The 2D-over-2.5D backgrounds approach (HD-2D style) is the locked visual style.",
-    "engine_comparison_static": "Once a system is decided, stay with it. No re-evaluation triggers for Unity 2023 LTS, no UE 5 alternative column. §5.3 is a static snapshot.",
+    "engine_comparison_static": "Once a system is decided, stay with it. No re-evaluation triggers for Unity 2023 LTS, no UE 5 alternative column. \u00a75.3 is a static snapshot.",
     "s4_weight_locked": "S-4 (AI-agent integration) weight = 3 (critical). Locked.",
-    "form_change_chapter_boundary_locked": "Form-change at chapter 4, form-return at chapter 6. Locked per user response 2026-07-20. Affects §12.4 and §12.6.",
-    "norris_recruitment_locked": "Norris appears as a nonplayable character (NPC) helping to resolve the Kid illness arc before formally joining the party. The recruitment follows logically from the body-transformation event. Locked per user response 2026-07-20. Affects §12.11 and the Kid illness arc.",
-    "level_pacing_curve_locked": "Linear curve, ~1.5 levels/chapter from 1 to 10–12 across the 10-chapter structure. Random encounters are removed/condensed into 'set piece' fights per §3.12, so the curve assumes no random encounter XP source. All elemental slot tiers should be unlocked by the end-game via the level-based progression. Locked per user response 2026-07-20. Affects §12.15 and the level scaling curves in §7.",
-    "ng_plus_endings_locked": "The 'on tracks' (canonical/preferred) ending is reached by following the central plotline. Alternative endings (e.g., the original 'let her go' ending, the new 'bring her back' ending) are accessible as optional post-game activities that summarize the alternative paths the game could have taken. This avoids requiring a replay to see all endings while preserving the single-track narrative experience. Locked per user response 2026-07-20. Affects §12.13 and the post-game content design.",
-    "dark_tech_migration_locked": "The dark-tech migration is a mechanical conceit: abilities obtained during the Lynx form segment are not unneeded/replaced but automatically transferred to Herle, who remains a playable character after form-return. This ensures continuity of player progress through the form-change segment. Locked per user response 2026-07-20. Affects §3.7 and §12.6.",
-    "element_system_ui_locked": "Element system is surfaced on a dedicated character screen. Each character has a switchable view showing: (a) their character image/portrait, (b) their elemental grid (the slots that have unlocked via level progression), (c) the ability to choose a slot, select an available tech from the unlocked pool, and place it there, (d) the 'support' techs in their available slots that can either be left alone or replaced with another tech at the player's decision. Locked per user response 2026-07-20. Affects the §13.7 / §3.10 element-UI working assumption.",
-    "music_handling_locked": "Placeholder music only. The project is fan-only, used for skill development, and not released externally. No licensing of original music; no commissioned new music. Locked per user response 2026-07-20. Affects §2.4 and the music pipeline in §8.3.",
-    "fan_work_posture_reinforced": "All licensing decisions reaffirmed: this is a fan-only project for skill development, not commercial, not externally released. The 'no financial payment' constraint on automated source acquisition (§8.2 Decision C) extends to all other forms of commercial interaction (no licensing fees, no commissioned work, no commercial asset purchases). Locked per user response 2026-07-20."
+    "form_change_chapter_boundary_locked": "Form-change at chapter 4, form-return at chapter 6. Locked per user response 2026-07-20. Affects \u00a712.4 and \u00a712.6.",
+    "norris_recruitment_locked": "Norris appears as a nonplayable character (NPC) helping to resolve the Kid illness arc before formally joining the party. The recruitment follows logically from the body-transformation event. Locked per user response 2026-07-20. Affects \u00a712.11 and the Kid illness arc.",
+    "level_pacing_curve_locked": "Linear curve, ~1.5 levels/chapter from 1 to 10\u201312 across the 10-chapter structure. Random encounters are removed/condensed into 'set piece' fights per \u00a73.12, so the curve assumes no random encounter XP source. All elemental slot tiers should be unlocked by the end-game via the level-based progression. Locked per user response 2026-07-20. Affects \u00a712.15 and the level scaling curves in \u00a77.",
+    "ng_plus_endings_locked": "The 'on tracks' (canonical/preferred) ending is reached by following the central plotline. Alternative endings (e.g., the original 'let her go' ending, the new 'bring her back' ending) are accessible as optional post-game activities that summarize the alternative paths the game could have taken. This avoids requiring a replay to see all endings while preserving the single-track narrative experience. Locked per user response 2026-07-20. Affects \u00a712.13 and the post-game content design.",
+    "dark_tech_migration_locked": "The dark-tech migration is a mechanical conceit: abilities obtained during the Lynx form segment are not unneeded/replaced but automatically transferred to Herle, who remains a playable character after form-return. This ensures continuity of player progress through the form-change segment. Locked per user response 2026-07-20. Affects \u00a73.7 and \u00a712.6.",
+    "element_system_ui_locked": "Element system is surfaced on a dedicated character screen. Each character has a switchable view showing: (a) their character image/portrait, (b) their elemental grid (the slots that have unlocked via level progression), (c) the ability to choose a slot, select an available tech from the unlocked pool, and place it there, (d) the 'support' techs in their available slots that can either be left alone or replaced with another tech at the player's decision. Locked per user response 2026-07-20. Affects the \u00a713.7 / \u00a73.10 element-UI working assumption.",
+    "music_handling_locked": "Placeholder music only. The project is fan-only, used for skill development, and not released externally. No licensing of original music; no commissioned new music. Locked per user response 2026-07-20. Affects \u00a72.4 and the music pipeline in \u00a78.3.",
+    "fan_work_posture_reinforced": "All licensing decisions reaffirmed: this is a fan-only project for skill development, not commercial, not externally released. The 'no financial payment' constraint on automated source acquisition (\u00a78.2 Decision C) extends to all other forms of commercial interaction (no licensing fees, no commissioned work, no commercial asset purchases). Locked per user response 2026-07-20."
   },
   "phase_3_redesign": {
     "bases": [
@@ -159,14 +159,14 @@
       ],
       "standalone_count": 33
     },
-    "magic_tier_system": "8 magic tiers per character. Elemental spell slots are unlocked by character level, not by player choice. On average, each character starts with 1 slot at tier 1 at level 1; level 3 gives 2 slots at tier 1; level 5 gives 2 at tier 1, 1 at tier 2; level 6 adds 1 more at tier 1; level 7 adds 1 at tier 2; level 8 adds 1 at tier 3; level 9 adds a 4th slot. This continues up to 8th tier elemental grids. The level-based progression is part of the locked design — it replaces the earlier 'open grid slot' concept.",
+    "magic_tier_system": "8 magic tiers per character. Elemental spell slots are unlocked by character level, not by player choice. On average, each character starts with 1 slot at tier 1 at level 1; level 3 gives 2 slots at tier 1; level 5 gives 2 at tier 1, 1 at tier 2; level 6 adds 1 more at tier 1; level 7 adds 1 at tier 2; level 8 adds 1 at tier 3; level 9 adds a 4th slot. This continues up to 8th tier elemental grids. The level-based progression is part of the locked design \u2014 it replaces the earlier 'open grid slot' concept.",
     "open_grid_slot_purpose": "REMOVED. The original 'open grid slot for player choice' concept is replaced by level-based progression. Personalization comes from which support techs are attached to which base, not from choosing which slots to fill.",
     "basic_attack_line": "Each base has a basic attack that scales with the magic tier system. Always present, always relevant, defines base identity.",
     "support_tech_role": "Augment the basic attack line with features (status effects, buffs, debuffs) rather than replacing it with separate actions. A tier-3 support tech might modify the basic attack to also apply a status. Tech execution should trigger a scene (party completing the move, voice clip, visual effect) alongside the technical effects.",
     "feature_mining": "Techs that are 'just damage' become candidates for mining underused status effects from the system's design space. This is how 'boring' techs gain identity without inventing new mechanics.",
-    "tech_design_granularity": "Per character / per tech (extreme granularity). One translation script per character or per tech, per the §8.4 decision.",
+    "tech_design_granularity": "Per character / per tech (extreme granularity). One translation script per character or per tech, per the \u00a78.4 decision.",
     "estimated_tech_count": "~60 fixed techs + per-base progression of elemental slots up to 8th tier. Actual number of available techs grows with character level across the level-based progression.",
-    "chapter_structure": "10 chapters of party progression (originally discussed as 'acts', now renamed to 'chapters'). Each chapter adds to the active party or changes its composition. Order: Serge→Kidd→Nikki→Glenn→(form)→Herle→Norris. Confirmed.",
+    "chapter_structure": "10 chapters of party progression (originally discussed as 'acts', now renamed to 'chapters'). Each chapter adds to the active party or changes its composition. Order: Serge\u2192Kidd\u2192Nikki\u2192Glenn\u2192(form)\u2192Herle\u2192Norris. Confirmed.",
     "active_party_size": "6 (up from original 3). Slot unlocks at chapter boundaries create dramatic progression reveals.",
     "support_combining_rules": "3 explicit combined units: Leena+Poshul, Korcha+Macha, Turnup+NeoFio. All other 33 supports are standalone.",
     "locked_techs_per_base": {
@@ -197,126 +197,126 @@
     },
     "locked_techs_for_supports": "Three techs per support, emulated as closely as possible from the original game. The full element catalog from the original Chrono Cross wiki is the authoritative reference (see `element_catalog` below).",
     "element_catalog": {
-      "source": "Extracted from Chrono Cross wiki (the original game) — full element data including level, target, and description for all 6 elements + Chrono Cross special",
+      "source": "Extracted from Chrono Cross wiki (the original game) \u2014 full element data including level, target, and description for all 6 elements + Chrono Cross special",
       "elements": {
         "Red": [
           {
-            "name": "×1Tablet",
-            "level": "1±0",
+            "name": "\u00d71Tablet",
+            "level": "1\u00b10",
             "target": "Single Ally/Enemy",
             "description": "Restores HP (Small)"
           },
           {
             "name": "TurnRed",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy/Ally",
             "description": "Turn foe's attribute / ally's attacks red"
           },
           {
             "name": "Fireball",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy",
             "description": "Hurls spheres of flames at enemy"
           },
           {
-            "name": "×1Ointment",
-            "level": "2±0",
+            "name": "\u00d71Ointment",
+            "level": "2\u00b10",
             "target": "Single Ally",
             "description": "Heals burns and red status effects"
           },
           {
             "name": "MagmaBomb",
-            "level": "2±6",
+            "level": "2\u00b16",
             "target": "All Enemies",
             "description": "Launches a volley of fireballs at enemies"
           },
           {
             "name": "AntiBlue",
-            "level": "3±5 (innate only)",
+            "level": "3\u00b15 (innate only)",
             "target": "Single Enemy",
             "description": "Temporarily seals blue Elements"
           },
           {
             "name": "FirePillar",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "Single Enemy",
             "description": "Burns enemy in a pillar of flames"
           },
           {
             "name": "Strengthen",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Singly Ally",
             "description": "Temporarily increases your attack power"
           },
           {
             "name": "Weaken",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Temporarily decreases foe's attack power"
           },
           {
             "name": "MagmaBurst",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Makes lava gush out from beneath foe"
           },
           {
             "name": "RedField",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "All Enemies & Allies",
             "description": "Colors all field attributes red"
           },
           {
-            "name": "↓Inferno",
-            "level": "5±0",
+            "name": "\u2193Inferno",
+            "level": "5\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Inferno Element"
           },
           {
             "name": "Inferno",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "All Enemies",
             "description": "Heats air to a burning-hot temperature"
           },
           {
             "name": "Recharge",
-            "level": "6±0 (innate only)",
+            "level": "6\u00b10 (innate only)",
             "target": "Single Ally",
             "description": "Recovers a used Element for re-use"
           },
           {
             "name": "Ninety-Nine",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Single Ally",
             "description": "Temporarily keeps Hit% of basic attacks at 99%"
           },
           {
-            "name": "↓Volcano",
-            "level": "6±0",
+            "name": "\u2193Volcano",
+            "level": "6\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Volcano Element"
           },
           {
             "name": "Volcano",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Induces an enormous volcanic eruption"
           },
           {
-            "name": "↓RedWolf",
-            "level": "7±0",
+            "name": "\u2193RedWolf",
+            "level": "7\u00b10",
             "target": "Modify Field",
-            "description": "Set trap to catch ✰RedWolf Element"
+            "description": "Set trap to catch \u2730RedWolf Element"
           },
           {
-            "name": "✰RedWolf",
-            "level": "7±2 (innate only)",
+            "name": "\u2730RedWolf",
+            "level": "7\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Summons a fire wolf to create a sea of flames"
           },
           {
-            "name": "✰Salamander",
-            "level": "8±0 (innate only)",
+            "name": "\u2730Salamander",
+            "level": "8\u00b10 (innate only)",
             "target": "All Enemies",
             "description": "Use salamander's breath to incinerate foes"
           }
@@ -324,127 +324,127 @@
         "Blue": [
           {
             "name": "TurnBlue",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy/Ally",
             "description": "Turn foe's attribute / ally's attacks blue"
           },
           {
             "name": "Cure",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy/Ally",
             "description": "Restores HP (Small)"
           },
           {
             "name": "AquaBeam",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy",
             "description": "Blasts foe with high-pressure water stream"
           },
           {
-            "name": "×1Medicine",
-            "level": "2±0",
+            "name": "\u00d71Medicine",
+            "level": "2\u00b10",
             "target": "Single Ally",
             "description": "Heals the flu and blue status effects"
           },
           {
             "name": "IceLance",
-            "level": "2±6",
+            "level": "2\u00b16",
             "target": "Single Enemy",
             "description": "Hurls an icicle spear at unsuspecting foe"
           },
           {
             "name": "AntiRed",
-            "level": "3±5 (innate only)",
+            "level": "3\u00b15 (innate only)",
             "target": "Single Enemy",
             "description": "Temporarily seals red Elements"
           },
           {
             "name": "CurePlus",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "Single Enemy/Ally",
             "description": "Restores HP (Medium)"
           },
           {
             "name": "AquaBall",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "Single Enemy",
             "description": "Hurls a large sphere of water at opponent"
           },
           {
             "name": "Nimble",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Temporarily increases physical Evade%"
           },
           {
             "name": "Numble",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Temporarily decreases physical Evade%"
           },
           {
             "name": "IceBlast",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Freezes your foe in a cage of ice"
           },
           {
             "name": "BlueField",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "Modify Field",
             "description": "Colors all field attributes blue"
           },
           {
             "name": "CureAll",
-            "level": "5±3 (innate only)",
+            "level": "5\u00b13 (innate only)",
             "target": "All Allies",
             "description": "Restores HP (Large)"
           },
           {
-            "name": "↓Deluge",
-            "level": "5±0",
+            "name": "\u2193Deluge",
+            "level": "5\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Deluge Element"
           },
           {
             "name": "Deluge",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "All Enemies",
             "description": "Inundates enemies in icy-cold floodwaters"
           },
           {
             "name": "Vigora",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Single Ally",
             "description": "Temporarily stops your stamina from decreasing"
           },
           {
-            "name": "↓Iceberg",
-            "level": "6±0",
+            "name": "\u2193Iceberg",
+            "level": "6\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Iceberg Element"
           },
           {
             "name": "Iceberg",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Hails large chunks of ice down on foes"
           },
           {
-            "name": "↓FrogPrince",
-            "level": "7±0",
+            "name": "\u2193FrogPrince",
+            "level": "7\u00b10",
             "target": "Modify Field",
-            "description": "Set trap to catch ✰FrogPrince Element"
+            "description": "Set trap to catch \u2730FrogPrince Element"
           },
           {
-            "name": "✰FrogPrince",
-            "level": "7±2 (innate only)",
+            "name": "\u2730FrogPrince",
+            "level": "7\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Summons Frog Prince to perform a water attack"
           },
           {
-            "name": "✰BlueWhale",
-            "level": "8±0 (innate only)",
+            "name": "\u2730BlueWhale",
+            "level": "8\u00b10 (innate only)",
             "target": "All Enemies",
             "description": "Calls on Neptune's anger to create a tsunami"
           }
@@ -452,127 +452,127 @@
         "Green": [
           {
             "name": "TurnGreen",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy/Ally",
             "description": "Turn foe's attribute / ally's attacks green"
           },
           {
             "name": "Bushwhacker",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy",
             "description": "Slices foe with a cloud of whirling leaves"
           },
           {
-            "name": "×1Antidote",
-            "level": "2±0",
+            "name": "\u00d71Antidote",
+            "level": "2\u00b10",
             "target": "Single Ally",
             "description": "Heals poison and green status effects"
           },
           {
             "name": "Heal",
-            "level": "2±6",
+            "level": "2\u00b16",
             "target": "Single Enemy/Ally",
             "description": "Restores HP (Small)"
           },
           {
             "name": "AeroSaucer",
-            "level": "2±6",
+            "level": "2\u00b16",
             "target": "Single Enemy",
             "description": "Throws blades of razor-sharp air to slice enemy"
           },
           {
             "name": "AntiYellow",
-            "level": "3±5 (innate only)",
+            "level": "3\u00b15 (innate only)",
             "target": "Single Enemy",
             "description": "Temporarily seals yellow Elements"
           },
           {
             "name": "Bushbasher",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "Single Enemy",
             "description": "Encases foe in a cage of thorny brambles"
           },
           {
             "name": "HealAll",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "All Allies",
             "description": "Restores HP (Medium)"
           },
           {
             "name": "EagleEye",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Temporarily increases your attack Hit%"
           },
           {
             "name": "BatEye",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Temporarily decreases foe's attack Hit%"
           },
           {
             "name": "AeroBlaster",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Shoots a sonic blast at your foe"
           },
           {
             "name": "GreenField",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "Modify Field",
             "description": "Colors all field attributes green"
           },
           {
-            "name": "↓Carnivore",
-            "level": "5±0",
+            "name": "\u2193Carnivore",
+            "level": "5\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Carnivore Element"
           },
           {
             "name": "Carnivore",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "All Enemies",
             "description": "A humongous Venus Flytrap devours foes"
           },
           {
             "name": "HealPlus",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Single Enemy/Ally",
             "description": "Restores HP (Large)"
           },
           {
             "name": "InfoScope",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Single Enemy",
             "description": "Detects your opponent's HP data"
           },
           {
-            "name": "↓Tornado",
-            "level": "6±0",
+            "name": "\u2193Tornado",
+            "level": "6\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Tornado Element"
           },
           {
             "name": "Tornado",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Causes a cyclone that batters foes to bits"
           },
           {
-            "name": "↓Sonja",
-            "level": "7±0",
+            "name": "\u2193Sonja",
+            "level": "7\u00b10",
             "target": "Modify Field",
-            "description": "Set trap to catch ✰Sonja Element"
+            "description": "Set trap to catch \u2730Sonja Element"
           },
           {
-            "name": "✰Sonja",
-            "level": "7±2 (innate only)",
+            "name": "\u2730Sonja",
+            "level": "7\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Summons a forest dryad to sprinkle poison dust"
           },
           {
-            "name": "✰Genie",
-            "level": "8±0 (innate only)",
+            "name": "\u2730Genie",
+            "level": "8\u00b10 (innate only)",
             "target": "All Enemies",
             "description": "A wind djinn blows your foes away with a twister"
           }
@@ -580,115 +580,115 @@
         "Yellow": [
           {
             "name": "TurnYellow",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy/Ally",
             "description": "Turn enemy's attribute / ally's attacks yellow"
           },
           {
             "name": "Uplift",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy",
             "description": "Cuts out and drops a block of stone on foe"
           },
           {
-            "name": "×1Brace",
-            "level": "2±0",
+            "name": "\u00d71Brace",
+            "level": "2\u00b10",
             "target": "Single Ally",
             "description": "Heals sprains and yellow status effects"
           },
           {
             "name": "ElectroJolt",
-            "level": "2±6",
+            "level": "2\u00b16",
             "target": "Single Enemy",
             "description": "Shocks foe with an electrical discharge"
           },
           {
-            "name": "×1Capsule",
-            "level": "3±0",
+            "name": "\u00d71Capsule",
+            "level": "3\u00b10",
             "target": "Single Ally",
             "description": "Restores HP (Medium)"
           },
           {
             "name": "AntiGreen",
-            "level": "3±5 (innate only)",
+            "level": "3\u00b15 (innate only)",
             "target": "Single Enemy",
             "description": "Temporarily seals green Elements"
           },
           {
             "name": "Upheaval",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "Single Enemy",
             "description": "Spears foe with shards of shattered earth"
           },
           {
             "name": "HiRes",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Temporarily increases your defense"
           },
           {
             "name": "LoRes",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Temporarily decreases opponent's defense"
           },
           {
             "name": "ElectroBolt",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Hurls a lightning bolt down on your opponent"
           },
           {
             "name": "YellowField",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "Modify Field",
             "description": "Colors all field attributes yellow"
           },
           {
-            "name": "↓Earthquake",
-            "level": "5±0",
+            "name": "\u2193Earthquake",
+            "level": "5\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch Earthquake Element"
           },
           {
             "name": "Earthquake",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "All Enemies",
             "description": "Crushes foes beneath giant stone pillars"
           },
           {
             "name": "PhysNegate",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Single Ally",
             "description": "Temporarily nullifies foe's physical attacks"
           },
           {
-            "name": "↓ThundaStorm",
-            "level": "6±0",
+            "name": "\u2193ThundaStorm",
+            "level": "6\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch ThundaStorm Element"
           },
           {
             "name": "ThundaStorm",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Causes a series of thunderbolts to occur"
           },
           {
-            "name": "↓Golem",
-            "level": "7±0",
+            "name": "\u2193Golem",
+            "level": "7\u00b10",
             "target": "Modify Field",
-            "description": "Set trap to catch ✰Golem Element"
+            "description": "Set trap to catch \u2730Golem Element"
           },
           {
-            "name": "✰Golem",
-            "level": "7±2 (innate only)",
+            "name": "\u2730Golem",
+            "level": "7\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Summons an earth giant to stomp on your foes"
           },
           {
-            "name": "✰ThundaSnake",
-            "level": "8±0 (innate only)",
+            "name": "\u2730ThundaSnake",
+            "level": "8\u00b10 (innate only)",
             "target": "All Enemies",
             "description": "An electric serpent zaps anything in its path"
           }
@@ -696,121 +696,121 @@
         "Black": [
           {
             "name": "TurnBlack",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy/Ally",
             "description": "Turn foe's attribute / ally's attacks black"
           },
           {
             "name": "GravityBlow",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy",
             "description": "Blows away foe with a ball of pure gravity"
           },
           {
-            "name": "×1BlackOut",
-            "level": "2±0",
+            "name": "\u00d71BlackOut",
+            "level": "2\u00b10",
             "target": "Single Ally",
             "description": "Removes black status effects"
           },
           {
             "name": "HellSoul",
-            "level": "2±0",
+            "level": "2\u00b10",
             "target": "Single Enemy",
             "description": "Attempts to remove the soul from foe's body"
           },
           {
             "name": "AntiWhite",
-            "level": "3±5 (innate only)",
+            "level": "3\u00b15 (innate only)",
             "target": "Single Enemy",
             "description": "Temporarily seals white Elements"
           },
           {
             "name": "Gravitonne",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "All Enemies",
             "description": "Crushes foes with a supergravity field"
           },
           {
             "name": "Genius",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Temporarily increases your magical power"
           },
           {
             "name": "Imbecile",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Temporarily decreases foe's magical power"
           },
           {
             "name": "HellBound",
-            "level": "4±0",
+            "level": "4\u00b10",
             "target": "Single Enemy",
             "description": "Sends your enemy on a trip to hell"
           },
           {
             "name": "Revenge",
-            "level": "5±3 (innate only)",
+            "level": "5\u00b13 (innate only)",
             "target": "Single Enemy",
             "description": "Shifts your status effects onto enemy"
           },
           {
-            "name": "↓FreeFall",
-            "level": "5±0",
+            "name": "\u2193FreeFall",
+            "level": "5\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch FreeFall Element"
           },
           {
             "name": "FreeFall",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "Single Enemy",
             "description": "Drops foe from the sky at supersonic speed"
           },
           {
-            "name": "×1Nostrum",
-            "level": "6±0",
+            "name": "\u00d71Nostrum",
+            "level": "6\u00b10",
             "target": "Single Ally",
             "description": "Restores HP (Large)"
           },
           {
             "name": "Diminish",
-            "level": "6±2",
+            "level": "6\u00b12",
             "target": "Modify Field",
             "description": "Temporarily halves Elemental damage"
           },
           {
             "name": "SealAll",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Modify Field",
             "description": "Temporarily stops everyone's Elements"
           },
           {
-            "name": "↓BlackHole",
-            "level": "6±0",
+            "name": "\u2193BlackHole",
+            "level": "6\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch BlackHole Element"
           },
           {
             "name": "BlackHole",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Sucks everything in the area into a super-vacuum"
           },
           {
-            "name": "↓MotherShip",
-            "level": "7±0",
+            "name": "\u2193MotherShip",
+            "level": "7\u00b10",
             "target": "Modify Field",
-            "description": "Set trap to catch ✰MotherShip Element"
+            "description": "Set trap to catch \u2730MotherShip Element"
           },
           {
-            "name": "✰MotherShip",
-            "level": "7±1 (innate only)",
+            "name": "\u2730MotherShip",
+            "level": "7\u00b11 (innate only)",
             "target": "All Enemies",
             "description": "Contacts a spaceship to blast foes to pieces"
           },
           {
-            "name": "✰GrimReaper",
-            "level": "8±0 (innate only)",
+            "name": "\u2730GrimReaper",
+            "level": "8\u00b10 (innate only)",
             "target": "All Enemies",
             "description": "Summons Death to wreak doom and destruction"
           }
@@ -818,145 +818,145 @@
         "White": [
           {
             "name": "TurnWhite",
-            "level": "1±0",
+            "level": "1\u00b10",
             "target": "Single Enemy/Ally",
             "description": "Turn foe's attribute / ally's attacks white"
           },
           {
             "name": "Revive",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Ally",
             "description": "Recovers friend from incapacitated status"
           },
           {
             "name": "PhotonRay",
-            "level": "1±7",
+            "level": "1\u00b17",
             "target": "Single Enemy",
             "description": "Shoots a bright laser beam at your opponent"
           },
           {
-            "name": "×1WhiteOut",
-            "level": "2±0",
+            "name": "\u00d71WhiteOut",
+            "level": "2\u00b10",
             "target": "Single Ally",
             "description": "Removes white status effects"
           },
           {
             "name": "Meteorite",
-            "level": "2±6",
+            "level": "2\u00b16",
             "target": "Single Enemy",
             "description": "Drops a comet down on an unsuspecting foe's head"
           },
           {
             "name": "RecoverAll",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "All Allies",
             "description": "Restores HP (Medium)"
           },
           {
             "name": "AntiBlack",
-            "level": "3±5 (innate only)",
+            "level": "3\u00b15 (innate only)",
             "target": "Single Enemy",
             "description": "Temporarily seals black Elements"
           },
           {
             "name": "PhotonBeam",
-            "level": "3±5",
+            "level": "3\u00b15",
             "target": "Single Enemy",
             "description": "Bombards enemy with an extra-powerful laser"
           },
           {
-            "name": "×1Panacea",
-            "level": "4±0",
+            "name": "\u00d71Panacea",
+            "level": "4\u00b10",
             "target": "Single Ally",
             "description": "Removes all status effects"
           },
           {
             "name": "Purify",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Removes all status effects"
           },
           {
             "name": "StrongMinded",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Ally",
             "description": "Temporarily increases your magical defense"
           },
           {
             "name": "WeakMinded",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "Single Enemy",
             "description": "Temporarily decreases foe's magical defense"
           },
           {
             "name": "MeteorShower",
-            "level": "4±4",
+            "level": "4\u00b14",
             "target": "All Enemies",
             "description": "Hurls several large asteroids at foes"
           },
           {
             "name": "FullRevival",
-            "level": "5±3 (innate only)",
+            "level": "5\u00b13 (innate only)",
             "target": "Single Ally",
             "description": "Recovers incapacitated status and heals all HP"
           },
           {
-            "name": "↓HolyLight",
-            "level": "5±0",
+            "name": "\u2193HolyLight",
+            "level": "5\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch HolyLight Element"
           },
           {
             "name": "HolyLight",
-            "level": "5±3",
+            "level": "5\u00b13",
             "target": "All Enemies",
             "description": "Casts a holy circle (annihilates undead)"
           },
           {
             "name": "HolyHealing",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Allies",
             "description": "Restores all HP and removes status effects"
           },
           {
             "name": "Magnify",
-            "level": "6±2",
+            "level": "6\u00b12",
             "target": "Modify Field",
             "description": "Temporarily increases Element damage by 1.5"
           },
           {
             "name": "MagNegate",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "Single Ally",
             "description": "Temporarily nullifies foe's magic attacks"
           },
           {
-            "name": "↓UltraNova",
-            "level": "6±0",
+            "name": "\u2193UltraNova",
+            "level": "6\u00b10",
             "target": "Modify Field",
             "description": "Set trap to catch UltraNova Element"
           },
           {
             "name": "UltraNova",
-            "level": "6±2 (innate only)",
+            "level": "6\u00b12 (innate only)",
             "target": "All Enemies",
             "description": "Causes an explosion of high-density energy"
           },
           {
-            "name": "↓Unicorn",
-            "level": "7±0",
+            "name": "\u2193Unicorn",
+            "level": "7\u00b10",
             "target": "Modify Field",
-            "description": "Set trap to catch ✰Unicorn Element"
+            "description": "Set trap to catch \u2730Unicorn Element"
           },
           {
-            "name": "✰Unicorn",
-            "level": "7±1 (innate only)",
+            "name": "\u2730Unicorn",
+            "level": "7\u00b11 (innate only)",
             "target": "All Allies",
             "description": "Holy horse's prayer raises Def & M.Def"
           },
           {
-            "name": "✰Saints",
-            "level": "8±0 (innate only)",
+            "name": "\u2730Saints",
+            "level": "8\u00b10 (innate only)",
             "target": "All Enemies/Allies",
             "description": "Army of angels attacks foes and heals party"
           }
@@ -964,7 +964,7 @@
         "Chrono Cross": [
           {
             "name": "Chrono Cross",
-            "level": "8±7 (Serge only)",
+            "level": "8\u00b17 (Serge only)",
             "target": "All Enemies/Allies",
             "description": "Long lost Element of 7th color attribute"
           }
@@ -1125,6 +1125,19 @@
       "elements": [],
       "maps": [],
       "chapters": []
+    }
+  },
+  "snapshot_cron": {
+    "last_snapshot": {
+      "timestamp": "2026-07-21T04:03:54+00:00",
+      "slot": "state-07",
+      "size_mb": 0.215
+    },
+    "last_push": {
+      "timestamp": "2026-07-21T04:04:09.037439+00:00",
+      "commit": "37be421",
+      "status": "success",
+      "commits_pushed": 3
     }
   }
 }

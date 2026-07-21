@@ -923,3 +923,10 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - Decisions cron: nothing to decide (DECISIONS.md does not exist / empty)
 
 **The cron loop's TDD role is idle. The next move is the user's.**
+
+---
+
+## Snapshot tick 31 (2026-07-21T04:03Z)
+- state-07 created (221K, replaces state-00 from 2026-07-21T01:04Z)
+- 3 commits pushed to origin/main (e21df3a..37be421): tdd-cron idle housekeeping loops 28+30, data: add characters/kidd
+- snapshot_cron metadata added to loop_state.json
