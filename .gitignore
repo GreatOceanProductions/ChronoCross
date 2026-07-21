@@ -15,8 +15,9 @@ env/
 .godot/
 .import/
 
-# Snapshots (regenerated on every cycle; not source of truth)
+# Snapshots and variants (regenerated on every cycle; not source of truth)
 .snapshots/
+.daily-variants/
 
 # Hermes internal temp
 .hermes-tmp.*/

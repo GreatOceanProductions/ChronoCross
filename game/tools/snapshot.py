@@ -63,16 +63,18 @@ def rotate() -> None:
     if not SNAPSHOTS_DIR.exists():
         return
     # Reverse iterate: from highest slot to lowest, shift down
-    for slot in range(RING_SIZE - 1, 0, -1):
+    # Step 1: Remove the oldest slot (it will be discarded)
+    oldest = get_state_dir(0)
+    if oldest.exists():
+        shutil.rmtree(oldest)
+    # Step 2: Shift each slot one position lower (slot N -> slot N-1)
+    for slot in range(1, RING_SIZE):
         src = get_state_dir(slot)
         dst = get_state_dir(slot - 1)
         if src.exists():
-            if dst.exists():
-                shutil.rmtree(dst)
             src.rename(dst)
-    # Remove the new state-00 (which was the old state-01) -- wait, we shifted DOWN
-    # After shift: state-00 contains old state-01, state-06 contains old state-07
-    # The old state-00 has been overwritten by the shift. This is the correct ring behavior.
+    # After this: old state-01 is at state-00, ..., old state-07 is at state-06.
+    # state-07 is now empty and will be filled by the new snapshot.
 
 
 def create_snapshot() -> Path:
