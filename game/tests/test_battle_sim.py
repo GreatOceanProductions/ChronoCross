@@ -259,3 +259,181 @@ def test_simulator_does_not_invent_effects_for_basic_attack():
     result = sim.simulate(td, attacker_attack=10)
     assert len(result.effects) == len(td.effects)
     assert len(result.applied_augmentations) == 0
+
+
+# ---------------------------------------------------------------------------
+# §7.10 test surface (c) + §7.5 status effect engine:
+# status applications respect resistance and immunity.
+#
+# Per §7.5 + DEC-002, the canonical 8 statuses are: sleep, poison, burn,
+# freeze, confuse, slow, stop, weaken. The §7.10 step 4 status application
+# step must respect the target's status_immunities and status_resistances:
+#
+#   - status_immunities: a set of status ids that the target is *fully*
+#     immune to. Attempts to apply yield 0 stacks regardless of chance.
+#   - status_resistances: a dict of {status_id: multiplier} where the
+#     multiplier scales the application chance (per the §7.4 chart, a
+#     0.5 multiplier halves the effective chance; 0.0 makes the
+#     status impossible — but the canonical contract is to use
+#     status_immunities for the 0.0 case, not a resistance entry).
+#
+# The orchestrator's apply_status method is the §7.10 step 4 entry point
+# for status application. It consumes the scoped "combat" PRNG from the
+# Determinism layer (§7.2) so a fixed seed produces a fixed outcome —
+# this is the §7.2 determinism contract applied to status application.
+# ---------------------------------------------------------------------------
+
+
+class _FakeTarget:
+    """Minimal target object for status application tests.
+
+    Per §7.5, a target (player, enemy, boss, summon) carries a
+    `status_immunities` set and a `status_resistances` dict. This
+    fake is enough for the orchestrator's apply_status path; a
+    future cycle will replace it with the real `Combatant` /
+    `StatusEffectComponent` once the §7.5 engine is mirrored in
+    Python.
+    """
+
+    def __init__(
+        self,
+        status_immunities=None,
+        status_resistances=None,
+    ):
+        # Normalize to a dict so the orchestrator can use both
+        # `in` and `.get(status_id)` against the same object.
+        # Accept either a set-like (iterable of ids) or a dict
+        # (id -> anything) for `status_immunities`. The spec
+        # contract (§7.5) is set-like; the dict form is an
+        # acceptable variant for callers that want to attach
+        # extra metadata.
+        imm = status_immunities or {}
+        if isinstance(imm, dict):
+            self.status_immunities = dict(imm)
+        else:
+            self.status_immunities = {sid: True for sid in imm}
+        self.status_resistances = dict(status_resistances or {})
+
+
+def test_apply_status_full_immunity_yields_zero_stacks():
+    """A target with `burn` in status_immunities yields 0 stacks
+    regardless of chance, attempts, or seed. The orchestrator must
+    short-circuit before any chance roll — immunity is a hard veto
+    per §7.5. The 100-attempt × chance=1.0 input is the strongest
+    possible "should apply" signal; immunity must override it.
+    """
+    import battle_sim  # type: ignore  # noqa: E402
+    import determinism  # type: ignore  # noqa: E402
+    import tech_resolver  # type: ignore  # noqa: E402
+
+    d = determinism.Determinism(0)
+    resolver = tech_resolver.TechResolver(d)
+    sim = battle_sim.BattleSimulator(d, resolver)
+    target = _FakeTarget(status_immunities={"burn"})
+    out = sim.apply_status(
+        target,
+        status_id="burn",
+        chance=1.0,
+        attempts=100,
+    )
+    assert out.applied == 0, (
+        f"immune target must yield 0 stacks, got {out.applied}"
+    )
+    assert out.immunity_blocked is True
+
+
+def test_apply_status_normal_target_yields_one_stack_per_attempt_at_chance_1():
+    """A target with no immunity and no resistance to `burn` yields
+    1 stack per attempt when chance=1.0. Per §7.5, the base contract
+    is that a 100% chance always lands — the orchestrator must not
+    silently re-roll or drop applications. This pins the "happy
+    path" that the resistance/immunity tests deviate from.
+    """
+    import battle_sim  # type: ignore  # noqa: E402
+    import determinism  # type: ignore  # noqa: E402
+    import tech_resolver  # type: ignore  # noqa: E402
+
+    d = determinism.Determinism(0)
+    resolver = tech_resolver.TechResolver(d)
+    sim = battle_sim.BattleSimulator(d, resolver)
+    target = _FakeTarget()  # no immunity, no resistance
+    out = sim.apply_status(
+        target,
+        status_id="burn",
+        chance=1.0,
+        attempts=100,
+    )
+    assert out.applied == 100, (
+        f"normal target at chance=1.0 must yield 1 stack per "
+        f"attempt; got {out.applied} over 100 attempts"
+    )
+    assert out.immunity_blocked is False
+
+
+def test_apply_status_resistance_halves_effective_chance():
+    """A target with `burn` in status_resistances at multiplier
+    0.5 has its effective chance halved. Per §7.4 + DEC-001 the
+    canonical "strong defense" multiplier is 0.5. With chance=1.0
+    and 100 attempts, the expected number of stacks is ~50
+    (probabilistic). The test pins the contract that resistance
+    *reduces* the stack count below the no-resistance baseline,
+    using a tolerance band that holds for any valid PRNG seed.
+
+    This is the contract: a resistant target never gets the full
+    per-attempt yield a non-resistant target gets. The exact
+    count is not pinned (it is PRNG-dependent) but the inequality
+    is.
+    """
+    import battle_sim  # type: ignore  # noqa: E402
+    import determinism  # type: ignore  # noqa: E402
+    import tech_resolver  # type: ignore  # noqa: E402
+
+    d = determinism.Determinism(0)
+    resolver = tech_resolver.TechResolver(d)
+    sim = battle_sim.BattleSimulator(d, resolver)
+    target = _FakeTarget(status_resistances={"burn": 0.5})
+    out = sim.apply_status(
+        target,
+        status_id="burn",
+        chance=1.0,
+        attempts=100,
+    )
+    # With multiplier 0.5 over 100 attempts at chance 1.0, every
+    # valid PRNG must produce strictly fewer than 100 stacks and
+    # strictly more than 0 stacks. The tolerance is wide because
+    # the underlying count is PRNG-dependent; the inequality is
+    # the contract.
+    assert 0 < out.applied < 100, (
+        f"resistant target must yield strictly fewer stacks than "
+        f"no-resistance baseline; got {out.applied} over 100 attempts"
+    )
+    assert out.immunity_blocked is False
+
+
+def test_apply_status_is_deterministic_for_same_seed():
+    """Per §7.2 + §7.10: two apply_status calls with the same
+    target, same parameters, and the same Determinism seed must
+    produce identical results. This pins the determinism contract
+    at the status-application layer. A refactor that introduces
+    a non-seeded random call will fail this test.
+    """
+    import battle_sim  # type: ignore  # noqa: E402
+    import determinism  # type: ignore  # noqa: E402
+    import tech_resolver  # type: ignore  # noqa: E402
+
+    target = _FakeTarget(status_resistances={"burn": 0.5})
+    # Two independent simulator instances with the same seed must
+    # produce the same stack count.
+    d1 = determinism.Determinism(42)
+    sim1 = battle_sim.BattleSimulator(d1, tech_resolver.TechResolver(d1))
+    out1 = sim1.apply_status(
+        target, status_id="burn", chance=1.0, attempts=100,
+    )
+    d2 = determinism.Determinism(42)
+    sim2 = battle_sim.BattleSimulator(d2, tech_resolver.TechResolver(d2))
+    out2 = sim2.apply_status(
+        target, status_id="burn", chance=1.0, attempts=100,
+    )
+    assert out1.applied == out2.applied, (
+        f"same-seed apply_status diverged: {out1.applied} vs {out2.applied}"
+    )
