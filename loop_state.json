@@ -1156,9 +1156,9 @@
   },
   "snapshot_cron": {
     "last_snapshot": {
-      "timestamp": "2026-07-21T04:03:54+00:00",
+      "timestamp": "2026-07-21T07:05:48+00:00",
       "slot": "state-07",
-      "size_mb": 0.215
+      "size_mb": 0.347
     },
     "last_push": {
       "timestamp": "2026-07-21T04:04:09.037439+00:00",
