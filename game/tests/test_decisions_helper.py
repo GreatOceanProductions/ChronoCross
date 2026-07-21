@@ -72,11 +72,18 @@ def test_apply_timeouts_resolves_old_decisions():
         # Add a decision
         new_id = decisions_helper.add("P2", "Timeout test", default="B")
         # Manually backdate its filed_ts by writing a hand-crafted file
-        # with an old filed timestamp
+        # with an old filed timestamp. The original test called
+        # datetime.now(timezone.utc).isoformat() twice and relied on the
+        # two calls returning byte-identical strings, but `add()` captured
+        # the timestamp a fraction of a second earlier — so the replace
+        # was always a no-op. The fix: read the actual filed timestamp
+        # written by add() (the one we know is in the file), then replace
+        # that exact string with the backdated one.
+        items = decisions_helper.load_queue()
+        filed_iso = next(it["filed"] for it in items if it["id"] == new_id)
         old_time = (datetime.now(timezone.utc) - timedelta(hours=13)).isoformat()
         text = decisions_helper.DECISIONS_FILE.read_text(encoding="utf-8")
-        # Replace the just-filed timestamp with the old one
-        text = text.replace(datetime.now(timezone.utc).isoformat(), old_time)
+        text = text.replace(filed_iso, old_time)
         decisions_helper.DECISIONS_FILE.write_text(text, encoding="utf-8")
         # Apply timeouts
         timed_out = decisions_helper.apply_timeouts(timeout_hours=12)
