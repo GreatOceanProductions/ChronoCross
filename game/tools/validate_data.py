@@ -41,9 +41,14 @@ except ImportError:
     sys.exit(2)
 
 
-# Map a JSON file's parent directory name to its schema filename
+# Map a JSON file's parent directory name to its schema filename.
+# Per §6.5 / §7.3, every JSON file in data/ validates against a
+# matching schema in data/schemas/{type}.schema.json. Adding a new
+# data type means adding the directory here AND authoring a schema
+# AND the data file itself.
 DIR_TO_SCHEMA = {
     "characters": "character",
+    "techs": "tech",
     "elements": "element",
     "maps": "map",
     "chapters": "chapter",

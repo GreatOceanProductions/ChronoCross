@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://remaster-engine.local/schemas/tech.schema.json",
+  "title": "TechData",
+  "description": "Schema for a single tech (basic attack, support tech, or ultimate) in the Remaster Engine. Per §7.3 of the design document, a tech is a typed data resource with schema-validated JSON loading. The augmentation model from §3.5 means a tech is never a standalone action; it is always a modification to a base's basic attack line or to another tech's effect. Minimal version covering the PoC's data needs per §15.4 Step 2.",
+  "type": "object",
+  "required": [
+    "id",
+    "display_name",
+    "tier",
+    "element",
+    "target_scope",
+    "slot_kind",
+    "base_damage_multiplier"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Lowercase snake_case identifier. Matches the filename in data/techs/."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48,
+      "description": "Display name shown in UI. Mirrors §3.7 locked per-base tech display names."
+    },
+    "tier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8,
+      "description": "Magic tier slot the tech occupies (1..8). Per §3.4 / §3.8, the tier determines when the slot is unlocked by level-based progression."
+    },
+    "element": {
+      "type": "string",
+      "enum": ["white", "red", "blue", "green", "yellow", "black"],
+      "description": "Color element. Closed set of 6 per §3.4 locked design."
+    },
+    "cost_mp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 99,
+      "default": 0,
+      "description": "MP cost to execute. Default 0 because the basic attack line (per §3.5) is free — no MP economy for the basic attack. Support techs and tier-8 ultimates have non-zero cost."
+    },
+    "base_damage_multiplier": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 10.0,
+      "default": 1.0,
+      "description": "Multiplier applied to the base damage roll before augmentations and the resistance chart. Per §7.3, this is the §3.5 'basic attack line' baseline. Augmentations modify this in place via DAMAGE_MULTIPLIER_BONUS entries."
+    },
+    "target_scope": {
+      "type": "string",
+      "enum": [
+        "SINGLE_ENEMY",
+        "ROW",
+        "ALL_ENEMIES",
+        "ALLY",
+        "SELF",
+        "ALL_ALLIES",
+        "FREE_SLOT"
+      ],
+      "description": "Whom the tech targets. Closed enum matching the §7.3 TargetScope enum. FREE_SLOT is the open grid slot from §3.6 (later §3.6-replacement: level-based progression per locked design, but the enum value remains for compat)."
+    },
+    "slot_kind": {
+      "type": "string",
+      "enum": ["BASIC_LINE", "SUPPORT_FIXED", "SUPPORT_PLAYER_CHOICE"],
+      "description": "How the tech was sourced. BASIC_LINE is a base's locked basic attack. SUPPORT_FIXED is a support's locked assignment. SUPPORT_PLAYER_CHOICE is the rare open grid slot (per §3.6, the level-based progression has replaced the open grid in the locked redesign, but the enum value remains)."
+    },
+    "augmentations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "PRE_DAMAGE_STATUS",
+              "POST_DAMAGE_STATUS",
+              "DAMAGE_MULTIPLIER_BONUS",
+              "ON_HIT_CHAIN",
+              "MP_DISCOUNT",
+              "SELF_BUFF"
+            ],
+            "description": "What the augmentation does. Per §7.3 the six kinds are: pre/post-damage status, damage multiplier bonus, on-hit chain, MP discount, self buff."
+          },
+          "chance": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "default": 1.0,
+            "description": "Probability the augmentation applies. Per §7.3, the §6.7 BattleRNG is the source of this roll."
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^[a-z_]+$",
+            "description": "Status effect to apply (when kind is *_STATUS). e.g. 'sleep', 'poison'."
+          },
+          "value": {
+            "type": "number",
+            "description": "Numeric effect of the augmentation. For DAMAGE_MULTIPLIER_BONUS this is the bonus added to base_damage_multiplier; for MP_DISCOUNT this is the MP saved; for SELF_BUFF this is the buff magnitude."
+          },
+          "turns": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Duration in turns for status / self-buff augmentations."
+          }
+        }
+      },
+      "default": [],
+      "description": "List of TechAugmentation entries per §7.3. Empty for the basic attack line (locked, no augmentations at tier 1). Future support techs populate this."
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["DAMAGE", "HEAL", "APPLY_STATUS", "REMOVE_STATUS", "MODIFY_FIELD"],
+            "description": "What the effect does. DAMAGE is the canonical basic-attack effect; HEAL is restoration; APPLY_STATUS / REMOVE_STATUS are status manipulators; MODIFY_FIELD is the §7.4 element grid manipulation."
+          },
+          "magnitude": {
+            "type": "number",
+            "description": "Magnitude of the effect. Damage/heal/buff amount."
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^[a-z_]+$"
+          },
+          "element": {
+            "type": "string",
+            "enum": ["white", "red", "blue", "green", "yellow", "black"]
+          }
+        }
+      },
+      "default": [],
+      "description": "List of TechEffect entries. Per §7.3, a tech is composed of zero or more effects. The basic attack line has exactly one DAMAGE effect; support techs may add heal/status/modify-field effects on top."
+    }
+  }
+}

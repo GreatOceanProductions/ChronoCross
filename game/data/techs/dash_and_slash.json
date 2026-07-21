@@ -1,0 +1,18 @@
+{
+  "id": "dash_and_slash",
+  "display_name": "Dash and Slash",
+  "tier": 1,
+  "element": "white",
+  "cost_mp": 0,
+  "base_damage_multiplier": 1.0,
+  "target_scope": "SINGLE_ENEMY",
+  "slot_kind": "BASIC_LINE",
+  "augmentations": [],
+  "effects": [
+    {
+      "kind": "DAMAGE",
+      "magnitude": 1.0,
+      "element": "white"
+    }
+  ]
+}
