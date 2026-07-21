@@ -320,3 +320,112 @@ def test_resolve_augmentation_chain_walks_pre_phase_before_post_phase():
     assert post_statuses == ["burn", "weaken"], (
         f"intra-post-phase order wrong: {post_statuses!r}"
     )
+
+
+def test_resolve_cost_mp_deducts_and_blocks_when_insufficient():
+    """Per §7.3 cost_mp field + §7.10 step 3 "energy economy": the
+    resolver enforces the tech's `cost_mp` against the attacker's
+    current MP. This is the §7.10 test-surface item (e) "energy
+    economy" pinned in its minimal form.
+
+    The contract (locked spec):
+      (a) On a successful resolve, MP is deducted by EXACTLY
+          `tech.cost_mp`. The post-resolve remaining_mp equals
+          `attacker_mp - cost_mp`.
+      (b) MP is floored at 0 — a resolve that would push MP
+          negative is instead rejected as INSUFFICIENT_MP (no
+          deduction, no side effects). For the basic attack
+          case where cost_mp == 0, this floor is not exercised
+          but the floor-of-0 invariant is the §7.3 contract.
+      (c) INSUFFICIENT_MP is a HARD short-circuit: no effects
+          are resolved, no augmentations are applied. The result
+          has `remaining_mp == attacker_mp` (unchanged) and
+          `effects == []` and `applied_augmentations == []`.
+      (d) The augmentation chain is NOT walked when cost is
+          unmet — pre-phase MP_DISCOUNT augmentations do not
+          roll when the cost check fails. Observable as
+          `applied_augmentations == []` on the INSUFFICIENT_MP
+          path.
+
+    This test covers all four claims with three resolve calls
+    on `fireball` (cost_mp=3) and a fresh resolver per call.
+    The fireball tech has no augmentations, so the chain-not-
+    walked claim is the trivial case; future cycles with MP
+    discount augs will extend the claim.
+
+    Cycle 13 of the tdd_cron. Prior cycle (12) pinned the §7.4
+    full 7x7 canonical chart. The cost_mp field has been on
+    the data files (fireball.json: 3, dash_and_slash.json: 0)
+    since cycle 38 (test_tech_data_loads) but the resolver
+    has not yet consumed it — this cycle closes the gap.
+    """
+    import tech_resolver  # type: ignore  # noqa: E402
+    import tech_data  # type: ignore  # noqa: E402
+    import determinism  # type: ignore  # noqa: E402
+
+    td = tech_data.TechData.from_json(TECHS_DIR / "fireball.json")
+    # Sanity-check the on-disk contract first. If the data file
+    # ever drops cost_mp this test will fail with a clear
+    # message at the data layer rather than silently passing
+    # at the resolver layer.
+    assert td.cost_mp == 3, (
+        f"fireball.json cost_mp should be 3, got {td.cost_mp}; "
+        "the §7.3 cost_mp field is required for this test to be "
+        "meaningful"
+    )
+
+    # (a) Successful resolve: MP = 5, cost_mp = 3 -> remaining = 2.
+    resolver = tech_resolver.TechResolver(determinism.Determinism(0))
+    result_ok = resolver.resolve(
+        td, attacker_attack=10, attacker_mp=5
+    )
+    assert result_ok.remaining_mp == 2, (
+        f"successful resolve should deduct cost_mp exactly: "
+        f"attacker_mp=5, cost_mp=3, expected remaining=2, "
+        f"got {result_ok.remaining_mp}"
+    )
+    # The DAMAGE effect should still resolve — the cost gate
+    # passing means the rest of the resolve chain runs.
+    assert len(result_ok.effects) == 1
+    assert result_ok.effects[0].kind == "DAMAGE"
+
+    # (c) Insufficient MP: MP = 2, cost_mp = 3 -> INSUFFICIENT_MP.
+    # remaining_mp unchanged, no effects resolved.
+    resolver2 = tech_resolver.TechResolver(determinism.Determinism(0))
+    result_short = resolver2.resolve(
+        td, attacker_attack=10, attacker_mp=2
+    )
+    assert result_short.remaining_mp == 2, (
+        f"insufficient_mp must NOT deduct any MP: "
+        f"attacker_mp=2, cost_mp=3, expected remaining=2, "
+        f"got {result_short.remaining_mp}"
+    )
+    # No effects resolved: the cost gate short-circuits the
+    # entire resolve step.
+    assert result_short.effects == [], (
+        f"insufficient_mp must short-circuit: effects should be [], "
+        f"got {result_short.effects!r}"
+    )
+    # (d) Augmentation chain not consumed.
+    assert result_short.applied_augmentations == [], (
+        f"insufficient_mp must NOT walk the augmentation chain: "
+        f"applied_augmentations should be [], "
+        f"got {result_short.applied_augmentations!r}"
+    )
+
+    # (b) Floor at 0: MP = 1, cost_mp = 3 -> INSUFFICIENT_MP,
+    # remaining_mp unchanged at 1 (not 0 — no deduction happened).
+    # The floor of 0 only applies to successful resolves; the
+    # insufficient path is a no-op.
+    resolver3 = tech_resolver.TechResolver(determinism.Determinism(0))
+    result_floor = resolver3.resolve(
+        td, attacker_attack=10, attacker_mp=1
+    )
+    assert result_floor.remaining_mp == 1, (
+        f"insufficient_mp with attacker_mp=1 should leave remaining "
+        f"at 1 (no deduction), got {result_floor.remaining_mp}"
+    )
+    assert result_floor.effects == [], (
+        f"insufficient_mp at floor should short-circuit: effects "
+        f"should be [], got {result_floor.effects!r}"
+    )

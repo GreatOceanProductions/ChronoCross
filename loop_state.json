@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T13:30:00+00:00",
-  "last_loop_completed": "2026-07-21T13:30:00+00:00",
-  "total_loops_completed": 50,
+  "last_updated": "2026-07-21T16:00:14.374747+00:00",
+  "last_loop_completed": "2026-07-21T16:00:14.374747+00:00",
+  "total_loops_completed": 53,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1112,12 +1112,12 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "planner_tick",
-  "last_loop_action": "planner-cron cycle 49: queued 3 new TDD tests (test_party_manager_add_remove_member, test_tech_resolver_cost_mp_deducts_and_blocks_when_insufficient, test_tech_resolver_pre_damage_status_can_cancel_damage_step), promoted 1 element meta-def to data-cron target_queue (white), capped scaffolding-cron target_queue to 5 items (promoted ElementGrid.gd to position 3, deferred SaveSystem + scenes). 97/97 tests green, 8/8 data files valid. 0 decisions filed.",
+  "last_loop_status": "authored_test",
+  "last_loop_action": "fix-cron idle: ISSUES.md has no open/in_progress issues, 104/104 tests green; per fix-cron.md protocol this is the only cron allowed to idle silently. Initialized fix_cron block (attempt_count={}) per 3-attempt escalation rule.",
   "data_cron": {
-    "last_data_authored": "fireball.json",
-    "last_data_type": "tech",
-    "last_data_run_at": "2026-07-21T13:00:00+00:00",
+    "last_data_authored": "white.json",
+    "last_data_type": "element_meta",
+    "last_data_run_at": "2026-07-21T15:30:00+00:00",
     "authored": {
       "characters": [
         "kidd",
@@ -1130,18 +1130,15 @@
       "techs": [
         "fireball"
       ],
-      "elements": [],
+      "elements": [
+        "white"
+      ],
       "maps": [],
       "chapters": []
     },
     "last_status": "committed",
-    "last_action": "Cycle: authored tech/fireball (red tier-1 single-enemy damage spell from element_catalog.Red[2]) -> validate_data.py 8/8 OK -> pytest 97/97 OK -> commit fc0d676",
+    "last_action": "Cycle: authored element_meta/white (first of 7 element meta-defs, Serge's element, §7.4 element grid canonical resistance chart) -> validate_data.py 9/9 OK -> pytest 104/104 OK -> commit be70a93. Resistance values per CANONICAL_CHART (2 strong + 2 weak per color element per the §7.4 hexagonal graph): white vs black/yellow = 2.0 strong, white vs red/blue = 0.5 weak, white vs self/green/neutral = 1.0. Planner queue note was incomplete (listed only 1 of each); the on-disk data uses the canonical 2+2 form to match element_grid.py CANONICAL_CHART.",
     "target_queue": [
-      {
-        "type": "element_meta",
-        "id": "white",
-        "source": "phase_3_redesign.element_catalog.elements.White + DEC-001 mirrored pairs + DEC-006 'neutral as 7th'. The first of the 7 element meta-definitions to be authored. White is the first base's element (Serge); the §7.4 element grid REQUIRES this data file to load the canonical resistance chart. Without any data/elements/*.json, the future ElementGrid.gd autoload (scaffolding queue position 3) has nothing to load. Author the file with: id=white, display_name=White, color_hex=#FFFFFF, base_damage_type=magic, resistances={white:1.0, red:0.5, blue:1.0, green:1.0, yellow:1.0, black:2.0, neutral:1.0} per DEC-001 (white is strong against black, weak against red)."
-      },
       {
         "type": "element",
         "id": "white_recoverall",
@@ -1161,6 +1158,11 @@
         "type": "element",
         "id": "blue_cure",
         "source": "phase_3_redesign.element_catalog.elements.Blue[1] — Cure (level 1±7, Single Enemy/Ally, 'Restores HP (Small)'). Heals to mirror Fireball's damage role for blue element."
+      },
+      {
+        "type": "element_meta",
+        "id": "black",
+        "source": "phase_3_redesign.element_catalog.elements.Black + DEC-001 mirrored pairs + DEC-006 'neutral as 7th'. The 2nd of 7 element meta-defs. Black is Herle's element. Per the planner's 'one-element-meta-per-tick' pace (see the black_hellbound source comment), this was promoted to the back of the queue after cycle 50 authored the white meta-def. The next element_meta after this one will be red (cycle 52), then blue, green, yellow, and finally neutral (which is the trivial all-1.0 row)."
       }
     ]
   },
@@ -1192,18 +1194,6 @@
         ],
         "priority": "medium",
         "scope_notes": "Python mirror in game/tools/party_manager.py. The GDScript PartyManager.gd autoload (scaffolding-cron queue[0]) will mirror the same contract. No spec ambiguity; the §3.3 + §7.7 design is locked.",
-        "cycles_to_complete": 1
-      },
-      {
-        "id": "test_tech_resolver_cost_mp_deducts_and_blocks_when_insufficient",
-        "source_section": "§7.10 test surface (e) — energy economy, §7.3 cost_mp field",
-        "description": "TechResolver enforces cost_mp: a tech with cost_mp=3 deducts 3 from the caster's MP on successful resolve, and an attempt to resolve when MP < cost_mp returns an insufficient_mp result (no deduction, no side-effects). Tests: (a) MP is deducted exactly by cost_mp; (b) MP floor is 0 (not negative); (c) insufficient_mp path is a hard short-circuit; (d) insufficient_mp does NOT consume the augmentation chain (pre-phase MP_DISCOUNT augmentations don't roll when the cost check fails).",
-        "expected_failure": "TechResolver.resolve does not check cost_mp / deducts more than cost_mp / runs augmentations even when cost is unmet / returns negative MP",
-        "depends_on": [
-          "test_tech_resolver_basic_attack"
-        ],
-        "priority": "medium",
-        "scope_notes": "Python mirror in game/tools/tech_resolver.py. Pairs with the cost_mp data field on techs (already on dash_and_slash.json + fireball.json). No open decisions. The §7.10 test surface item (e) 'energy economy' is one of 7 listed in the spec.",
         "cycles_to_complete": 1
       },
       {
@@ -1310,11 +1300,17 @@
         "commit": "pending",
         "passed_at": "2026-07-21T13:30:00+00:00",
         "note": "Cycle 12 bundle: test_canonical_chart_is_exposed_as_module_constant, test_canonical_chart_every_row_has_seven_entries, test_canonical_chart_every_color_element_has_two_strong_and_two_weak, test_canonical_chart_strong_pairs_have_matching_weak_mirror, test_canonical_chart_neutral_row_is_all_one, test_canonical_chart_compute_resistance_returns_strong_pair_value. The full 7x7 canonical chart pinned at the Python mirror level per section 7.4 + DEC-001 + DEC-006. CANONICAL_CHART constant in element_grid.py implements the original Chrono Cross hexagonal graph: white -> black -> yellow -> green -> blue -> red -> white, with each element strong vs +1/+2 in the cycle and weak vs -1/-2. Neutral is 1.0 against everything."
+      },
+      {
+        "id": "test_tech_resolver_cost_mp_deducts_and_blocks_when_insufficient",
+        "commit": "cycle53_pending",
+        "cycle": 13,
+        "source_section": "7.10 (energy economy) + 7.3 (cost_mp field)"
       }
     ],
     "current_test_focus": "test_party_manager_add_remove_member",
-    "last_test_authored": "test_canonical_chart_is_multiplicatively_inverse_across_diagonal",
-    "cycle_count": 12,
+    "last_test_authored": "test_tech_resolver_cost_mp_deducts_and_blocks_when_insufficient",
+    "cycle_count": 13,
     "last_run_action": "authored test + green (104/104 pass)",
     "last_run_completed": "2026-07-21T13:30:00+00:00"
   },
@@ -1360,5 +1356,10 @@
       }
     ],
     "queue_capped_note": "Cap of 5 items per planner-cron guideline. SaveSystem.gd, ChapterController.gd, and the scene files (character_screen.tscn etc.) are deferred to future planner ticks. CombatSimulator.gd kept in queue (step 6 of §15.4) because the tdd-cron has already pinned 10 tests against the Python mirror battle_sim.py — the GDScript port is the next milestone for combat integration. ElementGrid.gd promoted ahead of TechResolver.gd because the §7.4 element grid is data-driven and the data files are being authored in parallel by the data-cron this tick."
+  },
+  "fix_cron": {
+    "last_fixes": [],
+    "attempt_count": {},
+    "idle_cycles": 1
   }
 }

@@ -95,6 +95,13 @@ class ActionResult:
     target_scope: str
     effects: List[ResolvedEffect] = field(default_factory=list)
     applied_augmentations: List[Dict[str, Any]] = field(default_factory=list)
+    # Post-resolve attacker MP. Equal to `attacker_mp - cost_mp`
+    # on a successful resolve, or unchanged on INSUFFICIENT_MP.
+    # Default 0 keeps the dataclass backwards-compatible with
+    # callers that don't pass `attacker_mp` to `resolve()` — the
+    # MP field becomes meaningful only when the energy economy
+    # is exercised.
+    remaining_mp: int = 0
 
 
 class TechResolver:
@@ -128,7 +135,7 @@ class TechResolver:
         self._determinism = determinism
 
     def resolve(
-        self, tech, attacker_attack: float = 0.0
+        self, tech, attacker_attack: float = 0.0, attacker_mp: int = 0
     ) -> ActionResult:
         """Resolve a single tech against a target.
 
@@ -141,25 +148,55 @@ class TechResolver:
         their on-disk magnitude through unchanged in this cycle
         — the augmentation chain (future) is what modifies them.
 
+        The §7.3 / §7.10 "energy economy" surface is the
+        `attacker_mp` parameter: if the tech's `cost_mp` exceeds
+        the attacker's current MP, the resolve short-circuits
+        (no effects, no augmentations applied, `remaining_mp`
+        unchanged) per the locked spec. On a successful resolve,
+        `remaining_mp = attacker_mp - cost_mp`.
+
         Parameters
         ----------
         tech : TechData
             The tech being executed. The resolver reads `effects`,
-            `augmentations`, `target_scope`, and
+            `augmentations`, `target_scope`, `cost_mp`, and
             `base_damage_multiplier` from the tech.
         attacker_attack : float
             The attacker's current attack stat. The §7.10
             "Base damage × multiplier" formula multiplies this by
             the tech's `base_damage_multiplier` to produce the
             resolved damage magnitude.
+        attacker_mp : int
+            The attacker's current MP. The cost gate enforces
+            `attacker_mp >= tech.cost_mp`; otherwise the resolve
+            short-circuits. Default 0 keeps the basic-attack test
+            rig (which does not exercise the energy economy)
+            working unchanged.
 
         Returns
         -------
         ActionResult
-            The resolved effects, target scope, and applied
-            augmentations. For a basic attack, the applied
-            augmentations list is empty.
+            The resolved effects, target scope, applied
+            augmentations, and post-resolve `remaining_mp`. For
+            a basic attack, the applied augmentations list is
+            empty.
         """
+        # §7.10 step 3 / §7.3 cost gate: the tech's cost_mp
+        # must be paid BEFORE any effects resolve. INSUFFICIENT_MP
+        # is a hard short-circuit: no effects, no augmentations,
+        # remaining_mp unchanged. The floor of 0 only applies to
+        # successful resolves; an insufficient resolve is a no-op
+        # (no MP is deducted). This is the locked §7.10 test
+        # surface (e) "energy economy" contract.
+        cost_mp = int(getattr(tech, "cost_mp", 0))
+        if attacker_mp < cost_mp:
+            return ActionResult(
+                target_scope=tech.target_scope,
+                effects=[],
+                applied_augmentations=[],
+                remaining_mp=attacker_mp,
+            )
+        remaining_mp = attacker_mp - cost_mp
         resolved: List[ResolvedEffect] = []
         for eff in tech.effects:
             kind = eff.get("kind", "")
@@ -222,4 +259,5 @@ class TechResolver:
             target_scope=tech.target_scope,
             effects=resolved,
             applied_augmentations=applied,
+            remaining_mp=remaining_mp,
         )
