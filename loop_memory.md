@@ -1554,3 +1554,53 @@ Refs: §7.7 6-character party formation, §3.9 active party size,
 **Next planner tick (in ~4h):**
 - Re-derive queues. The TDD cron will have consumed `test_action_queue_speed_sort` (cycle 42, ~30 min from now). The queue will have 4 items left. Likely refresh: advance the scaffold queue to add `CombatSimulator.gd` (the next §15.4 step), and re-evaluate whether `test_tech_resolver_augmentation_chain` can proceed or whether DEC-007 needs to auto-resolve first (depends on user's response to the new decision).
 - Watch for: data-cron's progress on norris (likely cycle 43), the first cycle that exercises the augmentation chain (cycle 43, depends on DEC-007), and whether the user responds to the open decisions.
+
+## 2026-07-21 — TDD fix-loop 42: test_apply_timeouts_resolves_old_decisions — RESOLVED (commit 31cc52b)
+
+**What I did this loop:**
+- Ran the test suite baseline: 60/61 pass; 1 failure: `tests/test_decisions_helper.py::test_apply_timeouts_resolves_old_decisions`.
+- This is the unaddressed-failure case the cron protocol's §9.4 error-handling extension exists for. Treated the failure as a fix-loop (per §9.3, the "fix" loop shape), not a TDD cycle.
+- Diagnosed: the test called `datetime.now(timezone.utc).isoformat()` twice and expected both calls to return the same string. They don't — `add()` captured the timestamp a fraction of a second before the test's `replace()` call, so the `text.replace()` was always a no-op. The filed_ts in the file was never backdated, so `apply_timeouts()` (which is correct) found nothing past 12h.
+- Applied minimal fix to the test: read the actual `filed` timestamp written by `add()` (the one we know is in the file), then replace that exact string with the backdated one. This is a test fix, NOT a production change — `apply_timeouts()` was always correct; the test was unable to reliably reproduce the timeout scenario.
+- Re-ran full suite: **61/61 pass** in 1.90s.
+- Committed: `31cc52b fix: test_decisions_helper test_apply_timeouts_resolves_old_decisions — read filed timestamp from file rather than re-calling datetime.now()`
+- `loop_state.json`: bumped `total_loops_completed` to 42, set `last_loop_status: "authored_fix"`, `tdd_cron.last_status: "fix_committed"`. Did NOT bump `tdd_cron.cycle_count` (per Loop 34 lesson: `cycle_count` only increments when a test moves from `test_queue` to `tests_passed`).
+
+**Why a fix-loop, not a new TDD cycle:**
+- The §9.4 error-handling extension says: "If unaddressed bugs exist: (a) Pick the highest-priority one, (b) Read loop_memory.md for context, (c) Write a failing test that reproduces the bug, (d) Apply minimal fix, (e) Run all tests, confirm pass, (f) Commit. Only proceed to authoring new tests if no unaddressed bugs OR after all bugs are fixed."
+- The failure was an existing test that wasn't reliably exercising the production contract. The fix makes the test reliable — it now *actually tests* what it claims to test. This is the discipline the protocol asks for.
+- The TDD cron queue's `test_action_queue_speed_sort` (queue[0]) is still waiting. After this fix, the next TDD cycle can pick it up.
+
+**Lessons for future loops:**
+- **Test authors should never call `datetime.now()` twice and expect the strings to match.** Microsecond precision is preserved by `datetime.now(timezone.utc).isoformat()` (Python 3.12 outputs microseconds), so two consecutive calls always differ. The fix pattern: read the value the system actually wrote, then operate on that exact string. This is the same pattern as "never compare floating-point clocks."
+- **A failing test is only a useful test if it can fail in the future.** A test that always passes (because the bug-in-reproduction defeats it) is a useless test — it provides no signal. The fix turns this from "always green, never exercises the timeout path" into "actually exercises the timeout path."
+- **The `test_apply_timeouts_resolves_old_decisions` test was authored before the `decisions-cron` was set up to use this helper.** It's a scaffolding test for the decision-timeout machinery, not a TDD test. Its prior history: it was added when the helper was first written (scaffolding-cron era), and the timing assumption went unnoticed because no `apply_timeouts()` call had been run in production. The fix loop surfaces a long-standing latent issue.
+- **The Loop 34 lesson about `cycle_count` discipline still applies.** This loop is a fix-loop, not a TDD cycle. `cycle_count` stays at 7 (from the last TDD test authored in cycle 38). The next TDD cycle (cycle 8 in tdd_cron terms, total_loops_completed 43) will bump it to 8.
+- **The `bash.exe: warning: could not find /tmp, please create!` issue did NOT bite this loop.** I used `patch` to make the test edit (the test file is short, unique-context-matched cleanly, and didn't pick up the warning), and `uv run --no-project python` for the loop_state.json edit (the established pattern from Loop 21). The `patch` tool's JSON validator only fails on .json files where the bash warning corrupts the content; for .py files it works fine.
+
+**State at end of this loop:**
+- Test suite: 61/61 pass
+- `game/ISSUES.md`: empty
+- `loop_state.json`: `total_loops_completed: 42`, `last_loop_status: "authored_fix"`, `tdd_cron.cycle_count: 7` (unchanged), `tdd_cron.last_status: "fix_committed"`, `tdd_cron.test_queue: [test_action_queue_speed_sort]`
+- `tdd_cron.tests_passed`: 5 items (unchanged from cycle 38)
+- Commit: `31cc52b` on main
+- 0 unaddressed failures
+
+**Next TDD cycle (loop 43, ~30 min from now):**
+- Pick `tdd_cron.test_queue[0]` = `test_action_queue_speed_sort`.
+- This is the §7.10 (a) test surface item — ActionQueue sorts combatants by speed, ties broken by insertion order.
+- Author `game/tests/test_action_queue.py` (RED) — minimum 5 tests covering: import, speed-based sort, tie-breaker = insertion order, stability across multiple sort calls, and one integration test with PartyManager.
+- Confirm RED with the expected failure (`ModuleNotFoundError: No module named 'action_queue'`).
+- Author `game/tools/action_queue.py` (GREEN) — minimal Python class mirroring the future GDScript `ActionQueue` resource.
+- Run full test suite, confirm all 61 prior + ~5 new = ~66/~66 pass.
+- Commit: `test: ActionQueue speed-based sort (§7.10 combat engine, §15.4 PoC step 4)`.
+- Update `loop_state.json`: pop the item from queue → `tests_passed`; advance `current_test_focus`; bump `cycle_count` to 8 and `total_loops_completed` to 43.
+
+**Cross-cron status update:**
+- Content cron: idle, document complete (15/15 sections, 74,293 words)
+- Data cron: 5/6 bases authored (kidd, serge, nikki, glenn, herle); next target norris, then red_fireball (first element file)
+- TDD cron: fix-loop completed; 1 test queued (test_action_queue_speed_sort) for next TDD cycle
+- Decisions cron: 7 open decisions (DEC-001..DEC-007), 3 P1 + 4 P2
+- Snapshot cron: state-07 + 11 commits pushed in tick 37
+
+**The unaddressed-failure is cleared. The next cron tick can author the queued test.**
