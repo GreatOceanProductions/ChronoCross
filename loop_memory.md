@@ -818,3 +818,29 @@ data: add characters/kidd
 - Add element / map / chapter schemas (`game/data/schemas/element.schema.json`, `map.schema.json`, `chapter.schema.json`) so the data-authoring loop can proceed beyond characters. Natural starting schemas: element matches the locked element_catalog (name, level, target, description); chapter matches the 10-chapter structure (party progression, level range, primary location); map matches the original's "field" / "dungeon" / "town" dichotomy.
 - End the cron — design document is complete, and the data-cron is now productive but awaits more schema support to make full use of the locked design.
 - Let the data-cron continue at its natural pace (one character per cycle every 2 hours = ~3 days for the remaining 4 bases, then ~9 days for the 36 supports, then schema-dependent work on 126 elements + 10 chapters + maps).
+
+## 2026-07-21 — TDD-cron run: Idle (Loop 28, no tdd_cron state, no bugs, all tests pass)
+
+**What I did this run:**
+- Read `cron-jobs/tdd-cron.md` for the TDD protocol.
+- Read `loop_state.json`, tail of `loop_memory.md`, `game/ISSUES.md`, and the test directory layout.
+- Ran the test suite via `game/tools/run_tests.sh`: **22/22 tests pass** in 1.28s.
+- Confirmed `game/ISSUES.md` is empty (no open issues, no resolved history).
+- Confirmed `loop_state.json` has no `tdd_cron` / `test_queue` / `current_test_focus` / `tests_passed` / `last_test_authored` keys (grep count = 0).
+- Confirmed `git log`: latest commit is `ff02352 data: add characters/kidd` (data-authoring-cron Loop 27). No TDD work has been committed since the initial 4-file seed.
+
+**Why idle is the correct action:**
+- The tdd-cron protocol's idle rule: "If `tdd_cron.test_queue` is empty AND there are no ISSUES.md entries AND no failing tests → log idle status in loop_state.json and exit."
+- All three conditions hold: no queue (state has no tdd_cron keys at all), no ISSUES.md entries, 22/22 green.
+- The 22 existing tests (`test_daily_variant`, `test_decisions_helper`, `test_godot_runtime`, `test_snapshot`, `test_validate_data`) are scaffolding/data-validation tests authored in the initial PoC seed (commit 5a387eb) and the planner/decisions/headless-game work. They are not part of a red/green TDD cycle queue.
+- The cron protocol also says: "Do not invent work. Idleness is correct behavior." — the agent's job here is to maintain state and wait, not to backfill a queue.
+- The design document is structurally complete (15/15 sections, 74,293 words). The PoC (§15.2-§15.6) is the next deliverable but is a different phase (implementation, not design) and requires the user to populate the tdd_cron test queue with intent.
+- The data-authoring-cron is the active productive loop (Loop 27 authored kidd.json; next target nikki.json). The tdd-cron awaits its turn when the user transitions from design to implementation.
+
+**State update:**
+- `loop_state.json`: `total_loops_completed: 28`, `last_loop_status: "idle"`, `last_loop_action` describes this run.
+
+**Options for the user (not for the agent to choose):**
+- Populate the tdd_cron state with an initial test queue (e.g., §7.2 derived PRNG determinism, §7.3 Tech + TechAugmentation data model, §7.4 element grid + resistance, §7.5 status effect engine, §7.6 form-change state machine, §7.11 save/migration, §15.10 4-file seed expansion). The agent will then author one failing test per cycle.
+- Start the PoC (§15.4 10-day implementation order) — this is the natural transition from design to implementation and is what gives the tdd-cron real work.
+- End the cron — both the content-cron (idle 14+ loops) and tdd-cron (idle 5+ loops) are idle and awaiting user direction.

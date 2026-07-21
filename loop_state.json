@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "started": "2026-07-19",
   "last_updated": "2026-07-21",
-  "last_loop_completed": "2026-07-21T02:41:20+00:00",
-  "total_loops_completed": 27,
+  "last_loop_completed": "2026-07-21T02:45:09+00:00",
+  "total_loops_completed": 28,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1112,8 +1112,8 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "data_authored",
-  "last_loop_action": "data-authoring-cron run: authored game/data/characters/kidd.json (Red base, locked design §3.4 red=steal). Validator shows 2/2 character files valid. Pending state changes from prior tdd-cron idle runs (loop 25) included in commit. Next target: nikki (Blue base).",
+  "last_loop_status": "idle",
+  "last_loop_action": "tdd-cron run: idle (11th consecutive idle). Test suite 22/22 pass via game/tools/run_tests.sh. game/ISSUES.md empty (no open bugs). loop_state.json has no tdd_cron / test_queue / current_test_focus / tests_passed / last_test_authored keys. Per protocol idle rule, no work to do. Awaiting user to populate tdd_cron queue with intent.",
   "data_cron": {
     "last_data_authored": "kidd.json",
     "last_data_type": "character",
