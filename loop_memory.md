@@ -1380,3 +1380,28 @@ Refs: §7.7 6-character party formation, §3.9 active party size,
 - commits: `5072f8f` (test + impl), `db4d4b3` (state bookkeeping)
 
 **Next cycle target:** None — `test_queue` is empty. Per the cron prompt: "If no test queue items and no ISSUES.md bugs and all tests pass, log idle in loop_state.json and exit." The next cron tick (loop 8 of tdd_cron, or however it lands) should be an idle loop unless someone (this agent in a future session, the user, or another session) appends a new test idea to the queue. Likely candidates for the next test: `test_tech_resolver_augmentation_chain` (the §7.10 step 2 pre/post-damage augmentations) or `test_tech_resolver_element_resistance` (the §7.4 layer composing on top of the resolver).
+
+---
+
+## Loop 40 — data-authoring-cron cycle
+
+**Cycle:** Authored `game/data/characters/herle.json` (5th base of 6).
+
+**Source:** `phase_3_redesign.bases[4]` — Herle, Black element, tier 1 = Moonshine, tier 8 = Lunairetic, supports [Guile, Luccia, Mojo, Skelly, Grobyc, Devil Pip]. Innate role `dark` per §3.4 color-tier assignments (black → dark). Follows the same template as serge/kidd/nikki/glenn — basic attack = tier 1 tech, support slots 1-6, empty sprite/portrait placeholders.
+
+**Validation:** `uv run --with jsonschema python game/tools/validate_data.py` → 6/6 files valid (5 characters + 1 tech, no regressions).
+
+**Validator invocation gotcha:** The Python interpreter the shell resolves to does not have `jsonschema` installed in its base env, even though `uv pip install jsonschema` reported success. That's because Hermes' default Python venv is the one picked up. The fix: invoke via `uv run --with jsonschema python game/tools/validate_data.py` so uv resolves the package ephemerally for the run. The validator's own PYTHONPATH scrubbing (lines 27-35) doesn't help with this — `jsonschema` is genuinely absent from the active interpreter, not hidden by path. `game/requirements.txt` exists and lists `jsonschema>=4.17.0` and `pytest>=7.4.0`; a future loop could create a project-local `.venv` (e.g. `uv venv .venv && uv pip install -r game/requirements.txt`) so `python game/tools/validate_data.py` works without the `--with` flag.
+
+**Commits:**
+- `689d406` — data: add character/herle
+- `f6732b1` — state: data_cron - mark herle as authored (5/6 bases, loop 40)
+
+**State at end of run:**
+- 5/6 bases authored (Serge, Kidd, Nikki, Glenn, Herle). Only Norris (Yellow) remains.
+- 0/36 supports, 0/126 elements, 0/10 chapters, 1/60+ techs (dash_and_slash).
+- `data_cron.authored.characters`: `["kidd", "serge", "nikki", "glenn", "herle"]`
+- `data_cron.target_queue`: still has norris (next), then red_fireball, white_recoverall.
+- `total_loops_completed: 40`
+
+**Next cycle target:** `data_cron.target_queue[0]` → character/norris (6th/last base, Yellow, tier 1 Sunshower, tier 8 Top Shot, supports [Sneff, Leah, Mel, Zoah, Viper, Funguy], innate `healer` per §3.4 yellow=healer). After Norris, the queue pivots to element files (red_fireball is first).
