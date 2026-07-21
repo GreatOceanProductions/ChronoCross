@@ -1488,3 +1488,69 @@ Refs: §7.7 6-character party formation, §3.9 active party size,
 - Decisions cron: nothing to decide (DECISIONS.md empty).
 
 **The cron loop TDD role has a queue. The next move is the cron itself — cycle 42 will consume the new item.**
+
+## 2026-07-21 — Decisions tick 1: first batch of 6 decisions filed
+
+**What I did this tick:**
+- Ran `apply-timeouts` — no decisions past timeout (queue was empty).
+- Read the working set: `loop_state.json` (loop 40, data_cron 5/6 bases, tdd_cron queue has 1 item), `DECISIONS.md` (empty), schemas (character, tech), data/ (5 characters + 1 tech, no element files), recent memory (cycles 36-40: data authoring + tdd).
+- Identified 6 gaps that block or will block the data-cron and tdd-cron work:
+  1. **DEC-001 [P1]** Element resistance chart (6x6 default matrix) — blocks authoring `data/elements/resistances.json`
+  2. **DEC-002 [P1]** Status effect canonical list (8 vs 12 IDs) — blocks the §7.5 status engine TDD cycle
+  3. **DEC-003 [P1]** Support slot tier interpretation (cap vs level requirement) — blocks the data-cron's confidence in the support_slots.tier field
+  4. **DEC-004 [P2]** Stats block (HP/MP/Atk/Def/Spd/Mag) location — blocks the §7.10 combat engine TDD cycle
+  5. **DEC-005 [P2]** White element innate role — currently `none` for Serge; confirm or assign
+  6. **DEC-006 [P2]** Element file topology (6 base vs 6 + Chrono Cross special) — affects element directory layout
+- Each gap is a placeholder the crons have been working around without locking the default. 3 P1 (block 1-2 work crons) and 3 P2 (don't block current work, but block next cycles).
+- Filed via `decisions_helper.add()`; all 6 stored correctly with title, context, options, default, and timestamp.
+
+**Decisions tick 1: applied timeouts to 0, surfaced 6 new. Queue depth: 6 open (3 P1, 3 P2).**
+
+**Bug found and fixed:** The `decisions_helper.py` parser had a regex bug that truncated long titles to a single character (e.g., "Element resistance chart..." became "E"). The regex `(?P<title>[^\n]+?)(?:\n  - Filed: ...)?` used a non-greedy title with an optional newline-prefixed Filed group — the optional group never matched the actual format (` | Filed:`, inline), so the title was greedily truncated. Patched the regex to match the inline-pipe format used by `save_queue()`. Verified all 6 decisions round-trip through `load_queue()` correctly. This is a decisions-cron tool fix, not a spec change.
+
+**Why these defaults are safe:**
+- DEC-001 default (symmetric mirror pairs) is reversible: a future rebalance edits one JSON file, the engine doesn't change.
+- DEC-002 default (8 statuses) is the canonical CC subset; adding more is append-only.
+- DEC-003 default (cap tier interpretation) matches the locked level-based progression from spec §3.8.
+- DEC-004 default (extend character.schema.json) keeps the 1-source-of-truth pattern from character + tech.
+- DEC-005 default (keep white=none) matches the existing serge.json and the spec's silence on white innate.
+- DEC-006 default (6 base only) matches the locked design commitment to 6 elements.
+
+**Next decisions tick (in ~8 hours):** Re-apply timeouts (any of the 6 with no user response will auto-resolve to default at 12h mark). Look for new gaps that emerge as the data-cron and tdd-cron advance — likely candidates: form-change tech migration (DEC-007?), Norris innate role confirmation (healer?), and the TechResolver augmentation chain tests (status effect mechanics).
+
+---
+
+## 2026-07-21 — Planner tick 42: queue refresh + DEC-007 filed
+
+**What I did this tick:**
+- Read the working set: `loop_state.json` (loop 40, total_loops_completed 40, last test = `test_tech_resolver_basic_attack`, tdd_cron queue had 1 item from the prior TDD-cron loop 41 queue-refresh, data_cron 5/6 bases, scaffolding_cron had 2 items), `DECISIONS.md` (6 open, DEC-001..DEC-006), `ISSUES.md` (empty), recent memory (loops 36-41: data authoring + TDD queue-refresh).
+- Applied timeouts via `decisions_helper.py apply-timeouts` — none past timeout (all 6 still in queue, filed at 09:06-09:07 UTC, current tick is 4h later at 13:00-ish UTC).
+- Re-derived all 3 work-cron queues per the planner protocol:
+  - **tdd_cron.test_queue** — 5 items, reseeded to follow the §7.10 test surface + dependency chain: (1) `test_action_queue_speed_sort` (carry-over from loop 41), (2) `test_tech_resolver_augmentation_chain` (next in chain, depends on DEC-007), (3) `test_battle_sim_damage_formula_100_seeded` (composes the 3 prior layers, depends on DEC-001), (4) `test_battle_sim_status_resistance_immunity` (depends on DEC-001 + DEC-002), (5) `test_battle_log_save_load_roundtrip` (depends on SaveSystem — future scaffolding item).
+  - **data_cron.target_queue** — 4 items, kept prior 3 (norris, red_fireball, white_recoverall) and added 1 new: `black_hellbound` (the black element's iconic status-applying tech at level 4). Picked specifically because the upcoming augmentation chain + status effect tests will need a black element to exercise the Herle base just authored.
+  - **scaffolding_cron.target_queue** — 2 items, dropped `CharacterData.gd` (already committed in the loop 38 era per `e8fdd0c`), kept `TechData.gd`, added `ActionQueue.gd` (the next §15.4 architecture step after data classes — the action queue is the foundation of the CombatSimulator per §7.10).
+- **Filed DEC-007** [P1] — Augmentation chain walk order and idempotency. The §7.10 step 2 chain walk is the next major TDD cycle (cycle 43) and the spec doesn't pin (1) array-order vs priority-ordered, (2) whether augmentations can cancel damage, or (3) single list with phase field vs two separate lists. Filed with default A (single list, ordered, with phase field) — matches the existing `applied_augmentations` dataclass field on `ActionResult` from cycle 7 (TDD-cron already committed to the list shape; the phase field is the new addition).
+- Updated `loop_state.json`: tdd_cron has 5 queued (was 1), data_cron has 4 queued (was 4, swapped 1), scaffolding_cron has 2 queued (was 2, swapped 1). `total_loops_completed` bumped to 41, `last_loop_status: "queued_next"`, `last_loop_action` describes the refresh.
+- The 6 prior decisions (DEC-001..DEC-006) are still open and not blocking. The 12h timeout for the first batch fires around 21:00-21:07 UTC (2026-07-21); the next decisions tick at 17:00-ish should re-apply timeouts but they'll still be in flight (timeout fires at 12h from filing).
+
+**Reasoning (the prioritization):**
+- TDD queue ordered strictly by dependency: action queue → augmentation chain → damage formula composition → status application → save/load roundtrip. The prior TDD cron established the right cadence (5 cycles per 5-item queue). The next 5 cycles are the §7.10 test surface, end-to-end. Items 3-5 explicitly declare their open-decision dependencies so the tdd-cron can skip them if the decision is still unresolved at cycle time.
+- Data queue kept stable on the easy path (3 single elements + norris) and added `black_hellbound` because the Herle base was just authored (cycle 40) and the next cycles will need a black element for status effect tests. `red_fireball` first (level 1 — simplest data shape) → `white_recoverall` (level 3 — AOE) → `black_hellbound` (level 4 — status). The progression lets the data-cron author increasingly complex element shapes, mirroring the test complexity curve.
+- Scaffold queue aligned with TDD: TechData.gd follows the `test_tech_data` test (which already passed in cycle 36), ActionQueue.gd follows the new `test_action_queue_speed_sort` test (the next test to author). This is the §15.4 mirror pattern: GDScript follows the Python mirror after the test pins the contract.
+
+**Hard constraints honored:**
+- No code or data files were modified. Only `loop_state.json` and (transiently) `DECISIONS.md` via the helper.
+- Did NOT invent any tech data not in `loop_state.json.locked_design` or `phase_3_redesign.element_catalog`. The 3 element choices are all from the locked `element_catalog` (Red[2], White[5], Black[8] — these are array indices into the catalog).
+- Did NOT modify any of the 5 already-authored character files. Norris follows the same pattern (per `phase_3_redesign.bases[5]`).
+- Cap respected: 5 TDD items (max 5), 4 data items (max 5), 2 scaffold items (the protocol says "1-2 architecture items" per the planner-cron.md §3c — capped at 2).
+- DEC-007 filed immediately when the gap was found (per the planner protocol "If you find a missing field or ambiguous choice the spec doesn't answer, file a decision via decisions_helper.add() if blocked").
+
+**State at end of tick:**
+- `loop_state.json`: `total_loops_completed: 41`, `last_loop_status: "queued_next"`, tdd queue 5/5, data queue 4/5, scaffold queue 2/2
+- `DECISIONS.md`: 7 open (DEC-001..DEC-007, 4 P1 + 3 P2)
+- `game/ISSUES.md`: still empty
+- No code/data files touched; no commits needed for this tick (state-only change; will be committed by the next cron's bookkeeping or by a snapshot tick)
+
+**Next planner tick (in ~4h):**
+- Re-derive queues. The TDD cron will have consumed `test_action_queue_speed_sort` (cycle 42, ~30 min from now). The queue will have 4 items left. Likely refresh: advance the scaffold queue to add `CombatSimulator.gd` (the next §15.4 step), and re-evaluate whether `test_tech_resolver_augmentation_chain` can proceed or whether DEC-007 needs to auto-resolve first (depends on user's response to the new decision).
+- Watch for: data-cron's progress on norris (likely cycle 43), the first cycle that exercises the augmentation chain (cycle 43, depends on DEC-007), and whether the user responds to the open decisions.

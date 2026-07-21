@@ -61,10 +61,13 @@ def _parse_decisions_file() -> list[dict]:
         return []
     text = DECISIONS_FILE.read_text(encoding="utf-8")
     items = []
-    # Match: - [ ] [PRIORITY] DEC-NNN: <title> | Filed: <timestamp>
-    #        - [x] [PRIORITY] DEC-NNN: <title> | Resolved: <timestamp>
+    # Match: - [ ] [PRIORITY] DEC-NNN: <title> [| Filed: <timestamp>]
+    #        - [x] [PRIORITY] DEC-NNN: <title> [| Resolved: <timestamp>]
+    # The "| Filed:" or "| Resolved:" trailer is part of the title line in
+    # save_queue()'s output format, so the regex must match it on the same
+    # line as the title (separated by " | "), not on a body line.
     pattern = re.compile(
-        r"^- \[(?P<check>[ x])\] \[(?P<priority>[P0-9]+)\] (?P<id>DEC-\d{3}): (?P<title>[^\n]+?)(?:\n  - Filed: (?P<filed>[^\n]+))?(?:\n  - Resolved: (?P<resolved>[^\n]+))?",
+        r"^- \[(?P<check>[ x])\] \[(?P<priority>[P0-9]+)\] (?P<id>DEC-\d{3}): (?P<title>[^\n|]+?)(?: \| Filed: (?P<filed>[^\n]+))?(?: \| Resolved: (?P<resolved>[^\n]+))?$",
         re.MULTILINE,
     )
     for m in pattern.finditer(text):
@@ -82,9 +85,12 @@ def _parse_decisions_file() -> list[dict]:
             "context": "",
             "options": [],
         })
-    # Also pull context/default/options from the body that follows each item
+    # Also pull context/default/options from the body that follows each item.
+    # The title line is `- [ ] [P1] DEC-NNN: <title> | Filed: <ts>`; the body
+    # is the indented `  - Context:`, `  - Options:`, `  - Default:` lines
+    # that follow it. The title line itself must NOT be `  - ` indented.
     body_pattern = re.compile(
-        r"^- \[[ x]\] \[(?P<priority>[P0-9]+)\] (?P<id>DEC-\d{3}): [^\n]+\n((?:  - [^\n]+\n)+)",
+        r"^- \[[ x]\] \[[P0-9]+\] DEC-\d{3}: [^\n]+\n((?:  - [^\n]+\n)+)",
         re.MULTILINE,
     )
     for item, m in zip(items, body_pattern.finditer(text)):

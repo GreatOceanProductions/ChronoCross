@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T08:51:44+00:00",
-  "last_loop_completed": "2026-07-21T09:04:01+00:00",
-  "total_loops_completed": 40,
+  "last_updated": "2026-07-21T09:11:49.791513+00:00",
+  "last_loop_completed": "2026-07-21T09:11:49.791513+00:00",
+  "total_loops_completed": 41,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1113,7 +1113,7 @@
     ]
   },
   "last_loop_status": "queued_next",
-  "last_loop_action": "queue-refresh: appended test_action_queue_speed_sort to test_queue (was empty). Next cron run will RED-GREEN this test per 7.10 (Combat Engine) action queue spec.",
+  "last_loop_action": "queue-refresh: tdd_cron.test_queue reseeded 5 items following §7.10 test surface (action_queue, augmentation_chain, damage_formula_100_seeded, status_resistance, battle_log_roundtrip); data_cron.target_queue kept 3 prior + 1 new (black_hellbound) for upcoming §7.5 status tests; scaffolding_cron.target_queue dropped CharacterData.gd (already committed 5c74a4d era) and kept TechData.gd + added ActionQueue.gd. Filed DEC-007 (augmentation chain walk semantics) — blocks cycle 43's test_tech_resolver_augmentation_chain.",
   "data_cron": {
     "last_data_authored": "herle.json",
     "last_data_type": "character",
@@ -1135,23 +1135,23 @@
     "target_queue": [
       {
         "type": "character",
-        "id": "herle",
-        "source": "phase_3_redesign.bases[4] — Herle (Black), tier_1 'Moonshine', tier_8 'Lunairetic', supports [Guile, Luccia, Mojo, Skelly, Grobyc, Devil Pip]"
-      },
-      {
-        "type": "character",
         "id": "norris",
-        "source": "phase_3_redesign.bases[5] — Norris (Yellow), tier_1 'Sunshower', tier_8 'Top Shot', supports [Sneff, Leah, Mel, Zoah, Viper, Funguy]"
+        "source": "phase_3_redesign.bases[5] — Norris (Yellow), tier_1 'Sunshower', tier_8 'Top Shot', supports [Sneff, Leah, Mel, Zoah, Viper, Funguy], innate 'healer' per §3.4 yellow=healer"
       },
       {
         "type": "element",
         "id": "red_fireball",
-        "source": "phase_3_redesign.element_catalog.elements.Red[2] — Fireball (level 1±7, Single Enemy)"
+        "source": "phase_3_redesign.element_catalog.elements.Red[2] — Fireball (level 1±7, Single Enemy, 'Hurls spheres of flames at enemy')"
       },
       {
         "type": "element",
         "id": "white_recoverall",
-        "source": "phase_3_redesign.element_catalog.elements.White[5] — RecoverAll (level 3±5, All Allies)"
+        "source": "phase_3_redesign.element_catalog.elements.White[5] — RecoverAll (level 3±5, All Allies, 'Restores HP (Medium)')"
+      },
+      {
+        "type": "element",
+        "id": "black_hellbound",
+        "source": "phase_3_redesign.element_catalog.elements.Black[8] — HellBound (level 4±0, Single Enemy, 'Sends your enemy on a trip to hell'). Picked because (a) it's a single-target status-applying tech that exercises the §7.5 status effect engine, and (b) it's a black element which means it's available to Herle — the 5th base the data-cron just authored."
       }
     ]
   },
@@ -1176,7 +1176,7 @@
       {
         "id": "test_action_queue_speed_sort",
         "source_section": "7.10 (Combat Engine) + 6.7 (action queue)",
-        "description": "ActionQueue sorts combatants by speed, ties broken by insertion order. Foundation of the 5-step action lifecycle in 6.7 and the CombatSimulator in 7.10. Per 7.10 test surface item (a): the action queue sorts correctly by speed.",
+        "description": "ActionQueue sorts combatants by speed, ties broken by insertion order. Foundation of the 5-step action lifecycle in 6.7 and the CombatSimulator in 7.10. Per 7.10 test surface item (a).",
         "expected_failure": "ActionQueue module not found / sort not deterministic across instances",
         "depends_on": [
           "test_determinism_prng_seeded",
@@ -1185,6 +1185,61 @@
         ],
         "priority": "high",
         "scope_notes": "Python mirror in game/tools/action_queue.py; future GDScript ActionQueue.gd resource in scripts/combat/ per 7.10 architecture. Tie-breaker = insertion order to match 7.10 speed-based algorithm.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_tech_resolver_augmentation_chain",
+        "source_section": "7.10 step 2 (augmentation chain walk) + 3.5 (augmentation model)",
+        "description": "TechResolver walks the tech's augmentations list. Pre-damage augmentations apply (status pre-applications, MP discounts, self-buffs). Pins the §3.5 augmentation contract: support techs modify the base attack line, not replace it. Depends on DEC-007 (chain-walk semantics: single list with phase field, ordered).",
+        "expected_failure": "augmentation chain walk not implemented / phase field missing / idempotency failure on re-walk",
+        "depends_on": [
+          "test_action_queue_speed_sort",
+          "test_tech_resolver_basic_attack",
+          "DEC-007"
+        ],
+        "priority": "high",
+        "scope_notes": "Python mirror in game/tools/tech_resolver.py (extending the existing resolver). Future GDScript mirror in scripts/combat/TechResolver.gd. Pin: pre-damage augmentations run before damage calc; post-damage run after; both share the same list with a phase field. DEC-007 locks the wire format.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_battle_sim_damage_formula_100_seeded",
+        "source_section": "7.10 test surface (b) + 7.10 step 3 (damage calculation)",
+        "description": "Damage formula: base_damage_multiplier x attacker_attack x element_resistance x row_modifier x status_modifiers. Run 100 seeded fights; assert identical results across all 100. Per 7.10 test surface item (b). Composes ActionQueue + TechResolver + Determinism. Will fail until element resistance layer (§7.4) and row modifiers (§7.7) are implemented.",
+        "expected_failure": "element resistance layer not composed / row modifiers not applied / variance across seeded runs",
+        "depends_on": [
+          "test_action_queue_speed_sort",
+          "test_tech_resolver_basic_attack",
+          "DEC-001"
+        ],
+        "priority": "high",
+        "scope_notes": "Python mirror in game/tools/combat_simulator.py. Test asserts: 100 runs with same seed yield byte-identical damage values across all 14 combatants. This is the §7.2 determinism + §7.10 combat composition test. Likely blocked on DEC-001.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_battle_sim_status_resistance_immunity",
+        "source_section": "7.10 test surface (c) + 7.5 (status effect engine)",
+        "description": "Status applications respect resistance and immunity. A tech that applies 'burn' to a target with burn_immunity yields 0 stacks; a target with burn_resist yields 1 stack on 2+ attempts; normal target yields 1 stack. Per 7.10 test surface item (c).",
+        "expected_failure": "StatusEffectComponent not implemented / immunity check missing / resistance roll not in scoped PRNG",
+        "depends_on": [
+          "test_tech_resolver_basic_attack",
+          "DEC-001",
+          "DEC-002"
+        ],
+        "priority": "medium",
+        "scope_notes": "Python mirror in game/tools/status_effect.py. Depends on DEC-002 (canonical status list) and DEC-001 (resistance chart). Will be skipped if those decisions are still open after 12h timeout.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_battle_log_save_load_roundtrip",
+        "source_section": "7.10 test surface (d) + 7.11 (save system)",
+        "description": "Battle log round-trips through save/load. Run a 3-turn seeded battle, serialize the BattleLogEntry list to text .tres (per the locked §8.3 decision), reload, assert identical entries. Per 7.10 test surface item (d).",
+        "expected_failure": "BattleLogEntry serialization not implemented / reload drops entries / ordering not preserved",
+        "depends_on": [
+          "test_battle_sim_damage_formula_100_seeded",
+          "test_save_system_roundtrip"
+        ],
+        "priority": "medium",
+        "scope_notes": "Python mirror in game/tools/battle_log.py. Depends on the §7.11 SaveSystem being authored first (scaffolding-cron item, future cycle). Place in queue now so the dependency is visible; will be skipped until SaveSystem is in place.",
         "cycles_to_complete": 1
       }
     ],
@@ -1233,16 +1288,16 @@
     "last_run_at": "2026-07-21T08:53:00+00:00",
     "target_queue": [
       {
-        "file": "game/scripts/data/CharacterData.gd",
-        "category": "data_class",
-        "test_required": "game/tests/test_character_data.py",
-        "spec_ref": "§15.4 step 1, §6.5 schema-validated data layer, §7.3 typed data resources"
-      },
-      {
         "file": "game/scripts/data/TechData.gd",
         "category": "data_class",
         "test_required": "game/tests/test_tech_data.py",
         "spec_ref": "§15.4 step 2, §7.3 Tech + TechAugmentation data model, §3.8 8 magic tiers"
+      },
+      {
+        "file": "game/scripts/combat/ActionQueue.gd",
+        "category": "subsystem",
+        "test_required": "game/tests/test_action_queue.py",
+        "spec_ref": "§15.4 step 4, §7.10 action queue, §6.7 5-step action lifecycle"
       }
     ]
   }
