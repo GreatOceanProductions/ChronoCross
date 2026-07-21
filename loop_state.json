@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T11:29:58+00:00",
-  "last_loop_completed": "2026-07-21T11:29:58+00:00",
-  "total_loops_completed": 44,
+  "last_updated": "2026-07-21T12:00:00+00:00",
+  "last_loop_completed": "2026-07-21T12:00:00+00:00",
+  "total_loops_completed": 45,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1170,23 +1170,9 @@
   },
   "tdd_cron": {
     "last_status": "authored_test",
-    "last_action": "test: BattleSimulator thin orchestrator (§7.10 step 4, §7.2 determinism) — 6 tests, commit 47d1ef4",
-    "last_run_at": "2026-07-21T11:29:58+00:00",
+    "last_action": "test: BattleSimulator apply_status — §7.5 resistance + immunity (§7.10 step 4) — 4 tests, commit fa799f8",
+    "last_run_at": "2026-07-21T12:00:00+00:00",
     "test_queue": [
-      {
-        "id": "test_battle_sim_status_resistance_immunity",
-        "source_section": "7.10 test surface (c) + 7.5 (status effect engine)",
-        "description": "Status applications respect resistance and immunity. A tech that applies 'burn' to a target with burn_immunity yields 0 stacks; a target with burn_resist yields 1 stack on 2+ attempts; normal target yields 1 stack. Per 7.10 test surface item (c).",
-        "expected_failure": "StatusEffectComponent not implemented / immunity check missing / resistance roll not in scoped PRNG",
-        "depends_on": [
-          "test_tech_resolver_basic_attack",
-          "DEC-001",
-          "DEC-002"
-        ],
-        "priority": "medium",
-        "scope_notes": "Python mirror in game/tools/status_effect.py. Depends on DEC-002 (canonical status list) and DEC-001 (resistance chart). Will be skipped if those decisions are still open after 12h timeout.",
-        "cycles_to_complete": 1
-      },
       {
         "id": "test_battle_log_save_load_roundtrip",
         "source_section": "7.10 test surface (d) + 7.11 (save system)",
@@ -1250,13 +1236,20 @@
         "commit": "5072f8f",
         "passed_at": "2026-07-21T08:29:46.294254+00:00",
         "note": "Already covered by existing test_resolve_augmentation_chain_walks_pre_phase_before_post_phase in cycle 7. Queue had a stale duplicate; this entry documents that the test is passing."
+      },
+      {
+        "name": "test_battle_sim_status_resistance_immunity",
+        "target_file": "game/tests/test_battle_sim.py",
+        "commit": "fa799f8",
+        "passed_at": "2026-07-21T12:00:00+00:00",
+        "note": "4 tests in one cycle: full_immunity, normal_target, resistance_halves_chance, deterministic_seed. Queue item had 4 expected cases; all pinned in one test contract."
       }
     ],
-    "current_test_focus": "test_battle_sim_status_resistance_immunity",
-    "last_test_authored": "test_battle_sim_damage_formula_100_seeded",
-    "cycle_count": 9,
-    "last_run_action": "authored test + green (84/84 pass)",
-    "last_run_completed": "2026-07-21T11:29:58+00:00"
+    "current_test_focus": "test_battle_log_save_load_roundtrip",
+    "last_test_authored": "test_battle_sim_status_resistance_immunity",
+    "cycle_count": 10,
+    "last_run_action": "authored test + green (88/88 pass)",
+    "last_run_completed": "2026-07-21T12:00:00+00:00"
   },
   "scaffolding_cron": {
     "last_status": "queued",

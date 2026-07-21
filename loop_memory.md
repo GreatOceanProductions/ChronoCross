@@ -1729,3 +1729,48 @@ ActionQueue.gd will live in scripts/combat/ (scaffolding_cron item).
 - Git: commit `47d1ef4` on `main` (2 files changed, 367 insertions).
 
 **The TDD loop has produced its eighth authored test (this cycle's 6-test contract for the BattleSimulator orchestrator). The next loop (cycle 45) will pick `test_battle_sim_status_resistance_immunity` from the queue (§7.10 test surface (c) + §7.5 status effect engine).**
+
+---
+
+## 2026-07-21 — TDD cycle 45: test_battle_sim_status_resistance_immunity — PASSING
+
+**What I did this loop:**
+- Authored 4 tests in game/tests/test_battle_sim.py (RED phase) — pinning the §7.10 test surface (c) + §7.5 status effect engine contract for status application resistance and immunity.
+- Confirmed RED: all 4 new tests failed with AttributeError: 'BattleSimulator' object has no attribute 'apply_status'. 6 prior tests in the file still pass.
+- Extended game/tools/battle_sim.py with a new apply_status method + StatusApplicationResult dataclass (GREEN phase). The method: (1) short-circuits to 0 stacks on target.status_immunities hit (no PRNG call, hard veto per §7.5), (2) scales effective chance by target.status_resistances multiplier (per DEC-001 the canonical strong-defense is 0.5), (3) rolls attempts times via Determinism.scoped("combat") for the §7.2 determinism contract, (4) returns a StatusApplicationResult(applied, attempts, immunity_blocked).
+- Ran full test suite: **88/88 pass** (84 prior + 4 new) in 1.90s.
+- Committed: fa799f8 test: BattleSimulator apply_status — §7.5 resistance + immunity (§7.10 step 4). 2 files changed, 589 insertions(+), 280 deletions(-).
+- Updated loop_state.json.tdd_cron: popped test_battle_sim_status_resistance_immunity from test_queue → moved to tests_passed. cycle_count: 9 → 10, total_loops_completed: 44 → 45, current_test_focus advanced to test_battle_log_save_load_roundtrip.
+
+**Why this test, why now:**
+- tdd_cron.test_queue[0] was test_battle_sim_status_resistance_immunity (DEC-001 and DEC-002 both resolved, so the dependency gate was open). The §7.10 test surface item (c) is the natural next step after the orchestrator pass-through (cycle 44) — it adds the status-application substep to the action lifecycle, which is the 4th of 7 steps per §7.10.
+
+**The 4-test contract (per §7.10 step 4 + §7.5 + §7.2 + DEC-001 + DEC-002):**
+1. test_apply_status_full_immunity_yields_zero_stacks — target with burn in status_immunities → 0 stacks regardless of chance or attempts. Immunity is a hard veto (no PRNG call).
+2. test_apply_status_normal_target_yields_one_stack_per_attempt_at_chance_1 — no immunity, no resistance, chance=1.0, 100 attempts → exactly 100 stacks (1 per attempt). Pins the no-resistance happy path baseline.
+3. test_apply_status_resistance_halves_effective_chance — target with burn_resist=0.5, chance=1.0, 100 attempts → 0 < applied < 100 (resistance strictly reduces the count, exact value is PRNG-dependent).
+4. test_apply_status_is_deterministic_for_same_seed — two independent simulator instances with Determinism(42) produce identical applied counts. Pins the §7.2 determinism contract at the status-application layer.
+
+**Important lessons for future loops:**
+- **The Python apply_status is the contract for the GDScript BattleSimulator.apply_status.** A future scaffolding-cron work item on game/scripts/combat/BattleSimulator.gd must satisfy the same 4-test contract. The test file is the executable specification; the Python module is the reference implementation the GDScript version will mirror.
+- **The StatusApplicationResult dataclass is the new return type for the orchestrator's status path.** Future cycles that compose element resistance (§7.4), row modifiers (§7.7), and the full §7.5 StatusEffectComponent will compose their results on top of this minimal return shape. The dataclass's three fields (applied, attempts, immunity_blocked) are the contract surface.
+- **The  collection is set-or-dict-shaped.** The test helper _FakeTarget accepts both (a dict for the canonical form, a set for callers that prefer set-like ergonomics). The orchestrator uses  and , both of which work on either shape. This is the §7.5 contract: immunities are an unordered collection of status ids; resistances are a {status_id: multiplier} dict.
+- **The §7.10 step 4 status application uses the "combat" PRNG scope.** The orchestrator calls  to acquire the PRNG; this is the same scope used by the future augmentation-chain roll (cycle 40) and the future damage-variance roll. A save game can replay combat independently of dialog and treasure because each subsystem has its own scoped PRNG (§7.2).
+- **The "attempts" parameter is the contract for the augmentation chain.** The augmentation chain (DEC-007) may apply the same status multiple times in one tech (e.g. a tier-5 support that applies burn twice on critical). The orchestrator handles this with a single apply_status(attempts=N) call, not N apply_status(attempts=1) calls. This is more efficient AND preserves the determinism contract (one PRNG acquisition per apply_status, not one per attempt).
+- **The Test file grew from 263 to 432 lines (4 new tests + a 13-line _FakeTarget helper).** The bash.exe warning pollution from read_file is a recurring Windows/MSYS issue — future loops writing to .py files should verify the first byte is not "bash.exe: warning" after any patch operation. The fix is a one-line sed/python strip.
+
+**Test queue state at end of this loop:**
+- tests_passed: 9 items (the 8 from cycle 44 + test_battle_sim_status_resistance_immunity [this cycle])
+- test_queue: 1 item (test_battle_log_save_load_roundtrip) — depends on §7.11 SaveSystem, which is a scaffolding-cron item not yet authored
+- current_test_focus: test_battle_log_save_load_roundtrip (next loop, cycle 46)
+- cycle_count: 10 (9 from cycle 44 + 1 this cycle)
+- total_loops_completed: 45
+
+**Document state at end of this loop:**
+- File: game/tests/test_battle_sim.py — 10 tests, all passing (4 new in this cycle)
+- File: game/tools/battle_sim.py — extended with apply_status + StatusApplicationResult; total ~280 lines
+- File: loop_state.json — total_loops_completed: 45, last_loop_status: "authored_test", tdd_cron.cycle_count: 10
+- File: loop_memory.md — this entry appended
+- Git: commit fa799f8 on main (2 files changed, 589 insertions, 280 deletions)
+
+**The TDD loop has produced its ninth authored test (this cycle's 4-test contract for the BattleSimulator apply_status). The next loop (cycle 46) will pick test_battle_log_save_load_roundtrip from the queue (§7.10 test surface (d) + §7.11 save system). However, that test depends on the §7.11 SaveSystem scaffolding which is not yet authored — the next loop may be a queue-refresh or an idle loop while we wait for the scaffolding-cron to catch up.**
