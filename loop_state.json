@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "started": "2026-07-19",
   "last_updated": "2026-07-21T08:51:44+00:00",
-  "last_loop_completed": "2026-07-21T08:51:44+00:00",
+  "last_loop_completed": "2026-07-21T09:04:01+00:00",
   "total_loops_completed": 40,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
@@ -1112,8 +1112,8 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "authored_test",
-  "last_loop_action": "TDD cycle 6: authored test_party_manager_active_roster -> 53/53 pass. test_queue advanced to next item: test_tech_resolver_basic_attack",
+  "last_loop_status": "queued_next",
+  "last_loop_action": "queue-refresh: appended test_action_queue_speed_sort to test_queue (was empty). Next cron run will RED-GREEN this test per 7.10 (Combat Engine) action queue spec.",
   "data_cron": {
     "last_data_authored": "herle.json",
     "last_data_type": "character",
@@ -1169,10 +1169,25 @@
     }
   },
   "tdd_cron": {
-    "last_status": "authored_test",
-    "last_action": "TDD cycle 7: authored test_tech_resolver_basic_attack -> 61/61 pass. test_queue is now empty.",
+    "last_status": "queued_next",
+    "last_action": "queue-refresh: appended test_action_queue_speed_sort to test_queue (was empty). Next cron run will RED-GREEN this test per 7.10 (Combat Engine) action queue spec.",
     "last_run_at": "2026-07-21T08:29:46.294254+00:00",
-    "test_queue": [],
+    "test_queue": [
+      {
+        "id": "test_action_queue_speed_sort",
+        "source_section": "7.10 (Combat Engine) + 6.7 (action queue)",
+        "description": "ActionQueue sorts combatants by speed, ties broken by insertion order. Foundation of the 5-step action lifecycle in 6.7 and the CombatSimulator in 7.10. Per 7.10 test surface item (a): the action queue sorts correctly by speed.",
+        "expected_failure": "ActionQueue module not found / sort not deterministic across instances",
+        "depends_on": [
+          "test_determinism_prng_seeded",
+          "test_character_data_loads",
+          "test_party_manager_active_roster"
+        ],
+        "priority": "high",
+        "scope_notes": "Python mirror in game/tools/action_queue.py; future GDScript ActionQueue.gd resource in scripts/combat/ per 7.10 architecture. Tie-breaker = insertion order to match 7.10 speed-based algorithm.",
+        "cycles_to_complete": 1
+      }
+    ],
     "tests_passed": [
       {
         "name": "test_determinism_prng_seeded",
@@ -1205,7 +1220,7 @@
         "passed_at": "2026-07-21T08:29:46.294254+00:00"
       }
     ],
-    "current_test_focus": "idle",
+    "current_test_focus": "test_action_queue_speed_sort",
     "last_test_authored": "test_tech_resolver_basic_attack",
     "cycle_count": 7,
     "last_run_action": "authored test + green",

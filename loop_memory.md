@@ -1,3 +1,4 @@
+bash.exe: warning: could not find /tmp, please create!
 # Loop Memory — Remaster Engine Design Spec
 
 Cumulative memory across cron loops. Each loop appends to this file. Future loops read this to maintain continuity.
@@ -1405,3 +1406,85 @@ Refs: §7.7 6-character party formation, §3.9 active party size,
 - `total_loops_completed: 40`
 
 **Next cycle target:** `data_cron.target_queue[0]` → character/norris (6th/last base, Yellow, tier 1 Sunshower, tier 8 Top Shot, supports [Sneff, Leah, Mel, Zoah, Viper, Funguy], innate `healer` per §3.4 yellow=healer). After Norris, the queue pivots to element files (red_fireball is first).
+
+## 2026-07-21 — TDD-cron loop 41: queue-refresh (appended test_action_queue_speed_sort)
+
+**What I did this loop:**
+- Read `cron-jobs/tdd-cron.md` (the TDD protocol) — confirmed two relevant paths when `test_queue` is empty:
+  1. **PROTOCOL step 3** says: "Pick the next test to author from `tdd_cron.test_queue` in loop_state.json. If queue is empty: Read §6.7 (Combat), §7.2 (Determinism), §7.10 (Combat Engine). Add 1 test idea to the queue."
+  2. **WHEN TO BE IDLE** says: "If `tdd_cron.test_queue` is empty AND there are no ISSUES.md entries AND no failing tests → log idle status in loop_state.json and exit."
+  - These are not in conflict: step 3 is the queue-refresh action (append one idea so the *next* cron run has work); WHEN TO BE IDLE is the run-end posture (no committing unless a test was authored, no inventing work beyond the one seed).
+- Read `loop_state.json` via `uv run --no-project python` (per Loop 21 lesson about the `patch` tool choking on the `bash.exe: warning` prefix and the CRLF line endings).
+  - `tdd_cron.test_queue: []` (the 5-item queue seeded by the planner in tick 32 has been fully consumed across cycles 34-38).
+  - `tdd_cron.cycle_count: 7` (5 authored-test cycles after 2 prior housekeeping/idle cycles).
+  - `tdd_cron.last_test_authored: test_tech_resolver_basic_attack` (cycle 38).
+  - `last_loop_status: "authored_test"`, `total_loops_completed: 40`.
+- Read `game/ISSUES.md` — empty (no open or resolved bugs).
+- Ran `game/tools/run_tests.sh` — **61/61 pass in 1.87s** (no regressions; the prior 5 cycles' tests all still green).
+- Read §6.7 (Combat Simulation Architecture) and §7.10 (Combat Engine) of the design spec to pick the next test.
+  - §7.10 "Test surface" subsection enumerates 5 items the CombatSimulator tests should cover: (a) action queue sorts correctly by speed, (b) damage formula across 100 seeded fights, (c) status application respects resistance/immunity, (d) battle log round-trips through save/load, (e) full battle can be simulated headless.
+  - The most natural *next* test in the dependency chain is (a) — the action queue speed-based sort. Reasons: (i) it is the direct dependency of the §6.7 5-step action lifecycle; (ii) it consumes the `PartyManager` (cycle 38), the `TechResolver` (cycle 38), and the `Determinism` (cycle 34) — all three prior layers are now green and unblock the queue; (iii) it is the smallest possible test of the CombatSimulator that exercises real game logic without booting the Godot runtime.
+- Appended one new item to `tdd_cron.test_queue`:
+  ```json
+  {
+    "id": "test_action_queue_speed_sort",
+    "source_section": "7.10 (Combat Engine) + 6.7 (action queue)",
+    "description": "ActionQueue sorts combatants by speed, ties broken by insertion order. Foundation of the 5-step action lifecycle in 6.7 and the CombatSimulator in 7.10. Per 7.10 test surface item (a).",
+    "expected_failure": "ActionQueue module not found / sort not deterministic across instances",
+    "depends_on": ["test_determinism_prng_seeded", "test_character_data_loads", "test_party_manager_active_roster"],
+    "priority": "high",
+    "scope_notes": "Python mirror in game/tools/action_queue.py; future GDScript ActionQueue.gd resource in scripts/combat/ per 7.10 architecture. Tie-breaker = insertion order to match 7.10 speed-based algorithm.",
+    "cycles_to_complete": 1
+  }
+  ```
+- Set `tdd_cron.current_test_focus: "test_action_queue_speed_sort"`.
+- Set `last_loop_status: "queued_next"` (NOT "authored_test" — this is a queue-refresh, not a TDD cycle; per Loop 34 lesson, `cycle_count` only bumps when a test moves from queue to tests_passed, so I deliberately did not bump it).
+- Did NOT author a test this loop. The protocol step 3 says "add 1 test idea" — it does not say "author it." Authoring belongs to the next cron run, which will pick `test_queue[0]` and go through RED-GREEN-REFACTOR.
+- Did NOT commit. Per the tdd-cron protocol, no commit is the right posture for a queue-refresh run that did not author a test. Prior loops (e.g., cycle 31, "Initialize tdd_cron block") followed the same pattern.
+
+**Why I did NOT author the test in this same loop:**
+- The protocol hard constraint is "**One test per cycle.** Resist the urge to author 3 tests in one cron tick. The granularity is the point." A queue-refresh + test-authoring in the same loop would conflate two cycles and break the protocol discipline.
+- The `test_action_queue_speed_sort` test will be cycle 42 work. This loop work is the queue refresh; cycle 42 work is the RED-GREEN-REFACTOR on the new test.
+- The same pattern was followed when the planner tick 32 populated a 5-item queue and the first TDD cycle (34) consumed just one item from it.
+
+**The 1-item queue refreshed:**
+- `tdd_cron.test_queue[0]`: `test_action_queue_speed_sort` (§7.10 action queue, depends on 3 prior tests)
+- `tdd_cron.test_queue[1..n]`: still empty
+- `tdd_cron.tests_passed`: 5 (cycles 34, 35, 36, 37, 38 — all from the prior planner-seeded queue; all green)
+- `tdd_cron.cycle_count: 7` (unchanged; this loop is a queue-refresh, not a TDD cycle)
+- `tdd_cron.current_test_focus`: `test_action_queue_speed_sort`
+- `last_loop_status`: `queued_next`
+
+**Important lessons for future loops (and for the next TDD cycle 42):**
+- **The "queue-refresh" is a third loop shape alongside "draft" and "fix".** §9.3 of the design spec listed draft / fix / gate as the three loop shapes. The tdd-cron adds a fourth: queue-refresh — a run that does not author code but appends to the queue so the next run has work. It is *not* a "draft" loop (no code authored), *not* a "fix" loop (no bug to fix), *not* a "gate" loop (no decision needed). It is the loop shape that sustains the TDD cron when its queue empties between productive cycles. A future maintainer who sees `last_loop_status: "queued_next"` knows the run was a queue-refresh and the next run will author the test.
+- **The 5-item queue populated by the planner in tick 32 is the right scale.** 5 tests sustained 5 TDD cycles (34, 35, 36, 37, 38). The cron ran productive cycles for 5 loops, then went idle/refresh. A 3-5 item queue is the natural batch size: long enough to give the cron momentum, short enough that the planner can re-derive the order each refresh.
+- **The dependency order from the prior 5 cycles is the right model:** data layer first (Determinism, CharacterData, TechData), then assembly (PartyManager), then resolution (TechResolver), then orchestration (ActionQueue, CombatSimulator). The next test in the chain is ActionQueue. The test after that (cycle 43) will likely be the §7.10 (b) damage formula across 100 seeded fights, which exercises the ActionQueue + TechResolver + Determinism together.
+- **The "Do not invent work" discipline still applies at the test-idea level.** I did not invent 3 test ideas. I appended 1. The 1 is traceable to a specific line in §7.10 (the "Test surface" subsection). Future queue-refreshes should follow the same discipline: 1 item, 1 spec reference, 1 test contract, no invention.
+- **JSON edits via `uv run --no-project python` continue to work.** The `patch` tool JSON validator still chokes on the leading `bash.exe: warning` line and the CRLF line endings. The python-based approach (read raw → strip warning → parse → mutate → write back with CRLF preserved) is the only reliable way. This is the same pattern used in cycles 35, 36, 37, 38, and the data-cron cycles in between. The pattern is now part of the loop standard toolkit.
+
+**TDD cron state at end of loop 41:**
+- Test suite: 61/61 pass in 1.87s
+- `game/ISSUES.md`: empty (no open issues, no resolved history)
+- `tdd_cron.test_queue`: 1 item (`test_action_queue_speed_sort`)
+- `tdd_cron.tests_passed`: 5 items (cycle_count 7, with 2 of the 7 being housekeeping)
+- `tdd_cron.current_test_focus`: `test_action_queue_speed_sort`
+- `tdd_cron.last_status`: `queued_next`
+- `last_loop_status`: `queued_next`
+- `total_loops_completed`: 40 (unchanged; this was a queue-refresh, not a content loop)
+
+**Next TDD cycle (loop 42, ~30 min from now):**
+- Pick `tdd_cron.test_queue[0]` = `test_action_queue_speed_sort`.
+- Author `game/tests/test_action_queue.py` (RED) — minimum 5 tests covering: import, speed-based sort, tie-breaker = insertion order, stability across multiple sort calls, and one integration test with PartyManager to verify a 6-character party sorts into the expected turn order.
+- Confirm RED with the expected failure (`ModuleNotFoundError: No module named 'action_queue'`).
+- Author `game/tools/action_queue.py` (GREEN) — minimal Python class mirroring the future GDScript `ActionQueue` resource.
+- Run full test suite, confirm all 61 prior + 5 new = 66/66 pass.
+- Commit: `test: ActionQueue speed-based sort (§7.10 combat engine, §15.4 PoC step 4)`.
+- Update `loop_state.json`: pop the item from queue → `tests_passed`; advance `current_test_focus`; bump `cycle_count` to 8 and `total_loops_completed` to 41.
+
+**Cross-cron status update (informational):**
+- Content cron: idle, document complete (15/15 sections, 74,293 words).
+- Data cron: 5/6 bases authored (kidd, serge, nikki, glenn, herle); next target norris, then red_fireball (first element file).
+- TDD cron: 5/5 prior queue items completed; 1 item freshly queued for the next cycle.
+- Decisions cron: nothing to decide (DECISIONS.md empty).
+
+**The cron loop TDD role has a queue. The next move is the cron itself — cycle 42 will consume the new item.**
