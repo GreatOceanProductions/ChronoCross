@@ -1,4 +1,3 @@
-bash.exe: warning: could not find /tmp, please create!
 extends SceneTree
 ## Headless GDScript test for CharacterData.gd (§7.3, §15.4 step 1).
 ##
@@ -50,8 +49,13 @@ func _run_all_checks() -> void:
 	_check(instance != null, "CharacterData.new() returned null")
 
 	# 3. The class has the locked Phase 3 fields (typed properties exist).
+	# NOTE: Godot 4.3 does not support `var x: Array[String] = []` typed array
+	# declarations in class-body variables — that syntax was added in 4.4.
+	# Use untyped Array and String() cast the elements. Per §6.4 GDScript
+	# subset, static typing is preferred *inside* functions where the
+	# parser is more permissive.
 	var props: Array = instance.get_property_list()
-	var prop_names: Array[String] = []
+	var prop_names: Array = []
 	for p in props:
 		prop_names.append(String(p.get("name", "")))
 	_check("id" in prop_names, "CharacterData missing 'id' property")
@@ -97,7 +101,8 @@ func _run_all_checks() -> void:
 	_check(nikki != null, "from_path(nikki.json) returned null")
 	if nikki != null:
 		_check(nikki.element == &"blue", "nikki.element expected &blue, got %s" % str(nikki.element))
-		var support_ids: Array[String] = []
+		# Same Godot 4.3 typed-array limitation as line 61: use untyped Array.
+		var support_ids: Array = []
 		for slot in nikki.support_slots:
 			var slot_dict: Dictionary = slot
 			support_ids.append(String(slot_dict.get("support_id", "")))
