@@ -14,15 +14,21 @@ extends RefCounted
 ##   - `CharacterData.from_path(path)` returns a CharacterData or `null` on missing file.
 ##   - Required schema fields are exposed as typed `@export` properties.
 ##   - `support_slots` is a list of Dictionaries `{ "support_id": String, "tier": int }`.
+##     Per DEC-003a, the on-disk structure is semantic (recruitment/story/final),
+##     but the loader flattens to a list of (support_id, tier) for backward compat.
 ##   - Missing file -> `null` return (loud-fail per §7.3).
 ##
 ## Schema reference: `data/schemas/character.schema.json` (draft-07).
 ## Field whitelist mirrors the schema's `properties` block.
 
-## Closed set of valid elements per §3.4 + character.schema.json enum.
-enum Element { WHITE, RED, BLUE, GREEN, BLACK, YELLOW }
+## Closed set of valid elements per §3.4 + DEC-006/008. 7 elements:
+## 6 color (white/red/blue/green/black/yellow) + neutral (for physical,
+## basic attacks weak/medium/heavy, and Chrono Cross specials).
+enum Element { WHITE, RED, BLUE, GREEN, BLACK, YELLOW, NEUTRAL }
 
 ## Closed set of valid innate roles per §3.4 element-tier mapping.
+## Per DEC-005/005a: playable characters always have NONE; enemies use
+## these enums to describe their behavior pattern.
 enum InnateRole { STEAL, PERFORMANCE, COMBAT, DARK, HEALER, NONE }
 
 ## Lowercase identifier. Matches `^[a-z][a-z0-9_]*$` per schema.
@@ -32,6 +38,7 @@ enum InnateRole { STEAL, PERFORMANCE, COMBAT, DARK, HEALER, NONE }
 @export var name: String = ""
 
 ## Color element. Lowercase canonical form matching the JSON value.
+## 7-element closed set per DEC-006/008.
 @export var element: StringName = &""
 
 ## Current level. 1..99.
@@ -40,21 +47,34 @@ enum InnateRole { STEAL, PERFORMANCE, COMBAT, DARK, HEALER, NONE }
 ## True if this is one of the 6 main bases. False for support characters.
 @export var is_base: bool = false
 
-## Display name of the basic attack line.
+## Base stats for the character. Per DEC-004, stats live on the character.
+## Runtime scaling (per level) handled by StatResolver autoload.
+@export var stats: Dictionary = {}
+
+## Display name of the basic attack line. Per §3.5, matches tier_1_tech.
 @export var basic_attack: String = ""
 
-## Tier 1 magic slot tech.
+## Display name of the tier 1 tech (the basic attack line's tier-1 form).
 @export var tier_1_tech: String = ""
 
-## Tier 8 magic slot tech (the ultimate).
+## Display name of the tier 8 ultimate.
 @export var tier_8_tech: String = ""
 
-## Innate role. Default "none" matches schema default.
+## Innate role. Per DEC-005/005a: "none" for playable characters,
+## behavior enum for enemies.
 @export var innate: StringName = &"none"
 
-## List of support characters attached to this base at specific tiers.
-## Each entry is a Dictionary `{ "support_id": String, "tier": int }`.
+## Flat list of support characters. Per DEC-003a, the on-disk structure
+## is semantic (recruitment/story/final scene_progression) but the
+## loader flattens to (support_id, max_tier) where max_tier is the
+## `final` scene's tier. The semantic structure is exposed on
+## `scene_progression` as a separate property.
 @export var support_slots: Array[Dictionary] = []
+
+## Rich semantic structure per DEC-003a: each support has 3 scene
+## unlocks (recruitment/story/final). List of Dictionaries preserving
+## the full structure for consumers that need per-scene tech info.
+@export var scene_progression: Array[Dictionary] = []
 
 ## Path to the character's field sprite.
 @export var sprite: String = ""
@@ -107,13 +127,18 @@ static func from_dict(d: Dictionary) -> RefCounted:
 	c.innate = StringName(String(d.get("innate", "none")))
 	c.sprite = String(d.get("sprite", ""))
 	c.portrait = String(d.get("portrait", ""))
-	c.support_slots = _parse_support_slots(d.get("support_slots", []))
+	c.stats = d.get("stats", {})
+	var raw_slots = d.get("support_slots", [])
+	c.support_slots = _parse_support_slots_flat(raw_slots)
+	c.scene_progression = _parse_scene_progression(raw_slots)
 	return c
 
 
-## Convert the JSON `support_slots` array into a typed `Array[Dictionary]`.
-## Returns an empty array if the input is missing or malformed.
-static func _parse_support_slots(raw: Variant) -> Array[Dictionary]:
+## Flatten semantic scene_progression into (support_id, max_tier) list.
+## Per DEC-003a, the on-disk structure is semantic; this preserves the
+## pre-DEC-003a test contract that consumers iterate over
+## (support_id, tier) pairs.
+static func _parse_support_slots_flat(raw: Variant) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if typeof(raw) != TYPE_ARRAY:
 		return out
@@ -121,11 +146,34 @@ static func _parse_support_slots(raw: Variant) -> Array[Dictionary]:
 		if typeof(entry) != TYPE_DICTIONARY:
 			continue
 		var entry_dict: Dictionary = entry
-		if not entry_dict.has("support_id") or not entry_dict.has("tier"):
+		if not entry_dict.has("support_id") or not entry_dict.has("scene_progression"):
+			continue
+		var sp: Dictionary = entry_dict["scene_progression"]
+		var max_tier: int = 0
+		for scene in ["recruitment", "story", "final"]:
+			if sp.has(scene) and typeof(sp[scene]) == TYPE_DICTIONARY and sp[scene].has("tier"):
+				max_tier = max(max_tier, int(sp[scene]["tier"]))
+		out.append({
+			"support_id": String(entry_dict["support_id"]),
+			"tier": max_tier,
+		})
+	return out
+
+
+## Preserve the full semantic structure for consumers that need it.
+static func _parse_scene_progression(raw: Variant) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if typeof(raw) != TYPE_ARRAY:
+		return out
+	for entry in raw:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var entry_dict: Dictionary = entry
+		if not entry_dict.has("support_id") or not entry_dict.has("scene_progression"):
 			continue
 		out.append({
 			"support_id": String(entry_dict["support_id"]),
-			"tier": int(entry_dict["tier"]),
+			"scene_progression": entry_dict["scene_progression"],
 		})
 	return out
 

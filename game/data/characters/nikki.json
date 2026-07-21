@@ -17,12 +17,54 @@
   "tier_8_tech": "Limelight",
   "innate": "performance",
   "support_slots": [
-    {"support_id": "marcy", "tier": 1},
-    {"support_id": "korcha_macha", "tier": 2},
-    {"support_id": "fargo", "tier": 3},
-    {"support_id": "irene", "tier": 4},
-    {"support_id": "orlha", "tier": 5},
-    {"support_id": "pierre", "tier": 6}
+    {
+      "support_id": "marcy",
+      "scene_progression": {
+        "recruitment": {"tech_id": "marcy_t2", "tier": 2},
+        "story": {"tech_id": "marcy_t4", "tier": 4},
+        "final": {"tech_id": "marcy_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "korcha_macha",
+      "scene_progression": {
+        "recruitment": {"tech_id": "korcha_macha_t2", "tier": 2},
+        "story": {"tech_id": "korcha_macha_t4", "tier": 4},
+        "final": {"tech_id": "korcha_macha_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "fargo",
+      "scene_progression": {
+        "recruitment": {"tech_id": "fargo_t2", "tier": 2},
+        "story": {"tech_id": "fargo_t4", "tier": 4},
+        "final": {"tech_id": "fargo_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "irene",
+      "scene_progression": {
+        "recruitment": {"tech_id": "irene_t3", "tier": 3},
+        "story": {"tech_id": "irene_t5", "tier": 5},
+        "final": {"tech_id": "irene_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "orlha",
+      "scene_progression": {
+        "recruitment": {"tech_id": "orlha_t3", "tier": 3},
+        "story": {"tech_id": "orlha_t5", "tier": 5},
+        "final": {"tech_id": "orlha_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "pierre",
+      "scene_progression": {
+        "recruitment": {"tech_id": "pierre_t3", "tier": 3},
+        "story": {"tech_id": "pierre_t5", "tier": 5},
+        "final": {"tech_id": "pierre_t7", "tier": 7}
+      }
+    }
   ],
   "sprite": "",
   "portrait": ""

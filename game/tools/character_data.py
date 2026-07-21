@@ -73,12 +73,22 @@ class CharacterData:
         self.sprite: str = raw.get("sprite", "")
         self.portrait: str = raw.get("portrait", "")
         # support_slots: list of (support_id, tier) tuples so
-        # downstream code (PartyManager, character screen) can
-        # iterate without re-parsing JSON.
+        # support_slots: list of (support_id, max_tier) tuples so
+        # downstream code (PartyManager, character screen) can iterate
+        # without re-parsing JSON. Per DEC-003a, the on-disk structure
+        # is semantic (recruitment/story/final), but the test contract
+        # pinned by test_character_data.py is a flat list of 2-tuples
+        # (one per support). The semantic structure is exposed on
+        # `scene_progression` as a separate property.
         raw_slots = raw.get("support_slots", [])
         self.support_slots: List[Tuple[str, int]] = [
-            (slot["support_id"], int(slot["tier"])) for slot in raw_slots
+            (slot["support_id"], int(slot["scene_progression"]["final"]["tier"]))
+            for slot in raw_slots
         ]
+        # scene_progression: rich semantic structure per DEC-003a.
+        # List of {support_id, recruitment: {...}, story: {...}, final: {...}}
+        # for consumers that need the per-scene tech info.
+        self.scene_progression: List[dict] = list(raw_slots)
 
     @classmethod
     def from_json(

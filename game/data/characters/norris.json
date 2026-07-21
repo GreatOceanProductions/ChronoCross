@@ -1,0 +1,71 @@
+{
+  "id": "norris",
+  "name": "Norris",
+  "element": "yellow",
+  "level": 1,
+  "is_base": true,
+  "stats": {
+    "hp": 78,
+    "mp": 38,
+    "atk": 14,
+    "def": 8,
+    "spd": 13,
+    "mag": 7
+  },
+  "basic_attack": "Sunshower",
+  "tier_1_tech": "Sunshower",
+  "tier_8_tech": "Top Shot",
+  "innate": "healer",
+  "support_slots": [
+    {
+      "support_id": "sneff",
+      "scene_progression": {
+        "recruitment": {"tech_id": "sneff_t3", "tier": 3},
+        "story": {"tech_id": "sneff_t5", "tier": 5},
+        "final": {"tech_id": "sneff_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "leah",
+      "scene_progression": {
+        "recruitment": {"tech_id": "leah_t3", "tier": 3},
+        "story": {"tech_id": "leah_t5", "tier": 5},
+        "final": {"tech_id": "leah_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "mel",
+      "scene_progression": {
+        "recruitment": {"tech_id": "mel_t3", "tier": 3},
+        "story": {"tech_id": "mel_t5", "tier": 5},
+        "final": {"tech_id": "mel_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "zoah",
+      "scene_progression": {
+        "recruitment": {"tech_id": "zoah_t3", "tier": 3},
+        "story": {"tech_id": "zoah_t5", "tier": 5},
+        "final": {"tech_id": "zoah_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "viper",
+      "scene_progression": {
+        "recruitment": {"tech_id": "viper_t3", "tier": 3},
+        "story": {"tech_id": "viper_t5", "tier": 5},
+        "final": {"tech_id": "viper_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "funguy",
+      "scene_progression": {
+        "recruitment": {"tech_id": "funguy_t3", "tier": 3},
+        "story": {"tech_id": "funguy_t5", "tier": 5},
+        "final": {"tech_id": "funguy_t7", "tier": 7}
+      }
+    }
+  ],
+  "sprite": "",
+  "portrait": ""
+}

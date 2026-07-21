@@ -223,3 +223,100 @@ def test_resolve_basic_attack_no_augmentations_no_extra_effects():
     result = resolver.resolve(td, attacker_attack=10)
     assert len(result.effects) == len(td.effects)
     assert len(result.applied_augmentations) == 0
+
+
+def test_resolve_augmentation_chain_walks_pre_phase_before_post_phase():
+    """Per §7.10 step 2 + DEC-007: the resolver walks the tech's
+    augmentations list in *execution order*, not array order. All
+    pre-phase augmentations (MP discounts, self-buffs, status
+    pre-applications) run BEFORE the damage step; all post-phase
+    augmentations (on-hit chains, post-damage status) run AFTER.
+
+    The observable contract for this cycle is that
+    `applied_augmentations` reflects execution order: every
+    pre-phase entry appears in the result list before any
+    post-phase entry, with intra-phase order preserved from
+    the input array. This pins the §3.5 augmentation model —
+    supports modify the base attack line, not replace it —
+    and the DEC-007 idempotency-by-position contract.
+
+    This test will fail against the current implementation,
+    which copies `tech.augmentations` verbatim (array order)
+    without sorting by phase.
+    """
+    import tech_resolver  # type: ignore  # noqa: E402
+    import tech_data  # type: ignore  # noqa: E402
+    import determinism  # type: ignore  # noqa: E402
+
+    # Build a tech with a mixed-phase augmentation list. Array
+    # order is [post, pre, post, pre] — the OPPOSITE of the
+    # expected execution order. The resolver must reorder
+    # so all `pre` entries precede all `post` entries.
+    mixed_augs = [
+        {"kind": "POST_DAMAGE_STATUS", "phase": "post",
+         "status": "burn", "chance": 1.0, "turns": 3},
+        {"kind": "PRE_DAMAGE_STATUS", "phase": "pre",
+         "status": "slow", "chance": 1.0, "turns": 2},
+        {"kind": "POST_DAMAGE_STATUS", "phase": "post",
+         "status": "weaken", "chance": 1.0, "turns": 2},
+        {"kind": "PRE_DAMAGE_STATUS", "phase": "pre",
+         "status": "confuse", "chance": 1.0, "turns": 2},
+    ]
+    raw = {
+        "id": "dash_and_slash_aug_test",
+        "display_name": "Dash and Slash (aug test)",
+        "tier": 1,
+        "element": "white",
+        "target_scope": "SINGLE_ENEMY",
+        "slot_kind": "BASIC_LINE",
+        "base_damage_multiplier": 1.0,
+        "augmentations": mixed_augs,
+        "effects": [
+            {"kind": "DAMAGE", "magnitude": 1.0, "element": "white"},
+        ],
+    }
+    td = tech_data.TechData.__new__(tech_data.TechData)
+    td._raw = raw
+    td.id = raw["id"]
+    td.display_name = raw["display_name"]
+    td.tier = raw["tier"]
+    td.element = raw["element"]
+    td.cost_mp = 0
+    td.base_damage_multiplier = raw["base_damage_multiplier"]
+    td.target_scope = raw["target_scope"]
+    td.slot_kind = raw["slot_kind"]
+    td.augmentations = list(raw["augmentations"])
+    td.effects = list(raw["effects"])
+
+    resolver = tech_resolver.TechResolver(determinism.Determinism(0))
+    result = resolver.resolve(td, attacker_attack=10)
+
+    # The chain walk produces 4 applied augmentations, all of
+    # them — the resolver does not drop any.
+    assert len(result.applied_augmentations) == 4
+
+    # Execution order: all pre-phase first, then all post-phase.
+    # Within each phase, array order is preserved.
+    phases = [a.get("phase") for a in result.applied_augmentations]
+    assert phases == ["pre", "pre", "post", "post"], (
+        f"chain walk order wrong: {phases!r} "
+        "(expected ['pre', 'pre', 'post', 'post'])"
+    )
+
+    # Within pre-phase: array order is preserved (slow, then confuse).
+    pre_statuses = [
+        a.get("status") for a in result.applied_augmentations
+        if a.get("phase") == "pre"
+    ]
+    assert pre_statuses == ["slow", "confuse"], (
+        f"intra-pre-phase order wrong: {pre_statuses!r}"
+    )
+
+    # Within post-phase: array order is preserved (burn, then weaken).
+    post_statuses = [
+        a.get("status") for a in result.applied_augmentations
+        if a.get("phase") == "post"
+    ]
+    assert post_statuses == ["burn", "weaken"], (
+        f"intra-post-phase order wrong: {post_statuses!r}"
+    )

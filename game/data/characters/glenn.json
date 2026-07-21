@@ -17,12 +17,54 @@
   "tier_8_tech": "Sonic Sword",
   "innate": "combat",
   "support_slots": [
-    {"support_id": "karsh", "tier": 1},
-    {"support_id": "razzly", "tier": 2},
-    {"support_id": "radius", "tier": 3},
-    {"support_id": "van", "tier": 4},
-    {"support_id": "sprigg", "tier": 5},
-    {"support_id": "turnup_neofio", "tier": 6}
+    {
+      "support_id": "karsh",
+      "scene_progression": {
+        "recruitment": {"tech_id": "karsh_t2", "tier": 2},
+        "story": {"tech_id": "karsh_t4", "tier": 4},
+        "final": {"tech_id": "karsh_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "razzly",
+      "scene_progression": {
+        "recruitment": {"tech_id": "razzly_t2", "tier": 2},
+        "story": {"tech_id": "razzly_t4", "tier": 4},
+        "final": {"tech_id": "razzly_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "radius",
+      "scene_progression": {
+        "recruitment": {"tech_id": "radius_t2", "tier": 2},
+        "story": {"tech_id": "radius_t4", "tier": 4},
+        "final": {"tech_id": "radius_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "van",
+      "scene_progression": {
+        "recruitment": {"tech_id": "van_t3", "tier": 3},
+        "story": {"tech_id": "van_t5", "tier": 5},
+        "final": {"tech_id": "van_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "sprigg",
+      "scene_progression": {
+        "recruitment": {"tech_id": "sprigg_t3", "tier": 3},
+        "story": {"tech_id": "sprigg_t5", "tier": 5},
+        "final": {"tech_id": "sprigg_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "turnup_neofio",
+      "scene_progression": {
+        "recruitment": {"tech_id": "turnup_neofio_t3", "tier": 3},
+        "story": {"tech_id": "turnup_neofio_t5", "tier": 5},
+        "final": {"tech_id": "turnup_neofio_t7", "tier": 7}
+      }
+    }
   ],
   "sprite": "",
   "portrait": ""

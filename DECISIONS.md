@@ -39,45 +39,30 @@ _(none currently)_
 
 - [x] [P1] DEC-003: Norris support tech tier interpretation | Filed: 2026-07-21 | Resolved: 2026-07-21
   - Resolution: Supports have a 3-tech story-driven unlock progression (NOT just level-based). Each support unlocks 3 techs at story scenes: (1) canon recruitment scene → first tech (tier 2 or 3, prioritizing 3 for late recruits, 2 for early); (2) canon storyline scene → second tech (tier 4 for early recruits, 5 for late); (3) canon final tech/equipment scene → third tech (tier 6 for early recruits, 7 for late). This is RICHER than the level-based tier system. The support_slots.tier field needs to be refactored: it should hold an array of 3 entries, each with {scene_id, tech_id, tier}.
-  - **Follow-up:** DEC-003a filed (see Open Decisions) to lock the exact support_slots schema.
 
 - [x] [P2] DEC-004: Stats block (HP, MP, Attack, Defense, Speed, Magic) - schema location | Filed: 2026-07-21 | Resolved: 2026-07-21
   - Resolution: Extend character.schema.json (option A). Add hp/mp/atk/def/spd/mag fields, all integers, required at base level. Runtime scaling (per level) handled by StatResolver autoload.
 
 - [x] [P2] DEC-005: White element innate role (Serge has innate=none - confirm or assign) | Filed: 2026-07-21 | Resolved: 2026-07-21
-  - Resolution: NO canon character has an innate feature. Innates come from EQUIPMENT, not from elements. Kid's "steal" comes from her tier 1 tech (pilfer), not from her innate. This means the `innate` field on CharacterData may be vestigial. Recommend removing the field from the schema, OR repurposing it to "innate_source: equipment | tech | none" (where it documents where this character gets its innates from).
-  - **Follow-up:** DEC-005a filed (see Open Decisions) to choose between vestigial removal or repurposing.
+  - Resolution: NO canon character has an innate feature. Innates come from EQUIPMENT, not from elements. Kid's "steal" comes from her tier 1 tech (pilfer), not from her innate. The `innate` field is for ENEMIES (their behavior-driven AI), not for playable characters.
 
 - [x] [P2] DEC-006: Element file naming and topology (8 elements vs 6 base) | Filed: 2026-07-21 | Resolved: 2026-07-21
-  - Resolution: 7 elements total. Six base (red, blue, green, yellow, white, black) plus NEUTRAL as the 7th. Neutral is the default for any physical/non-elemental ability and for Chrono Cross specials (Time Egg etc.). Neutral damage is 1.0 flat. The 6x6 resistance matrix from DEC-001 becomes 7x7 with neutral as a 7th row/column.
+  - Resolution: 7 elements total. Six base (red, blue, green, yellow, white, black) plus NEUTRAL as the 7th. Neutral is the default for any physical/non-elemental ability, basic attacks (weak/medium/heavy), and Chrono Cross specials (Time Egg etc.). Neutral damage is 1.0 flat. The 6x6 resistance matrix from DEC-001 becomes 7x7 with neutral as a 7th row/column.
 
 - [x] [P1] DEC-007: Augmentation chain walk order and idempotency | Filed: 2026-07-21 | Resolved: 2026-07-21
   - Resolution: Single ordered list with phase field (option A). Each augmentation has {kind, phase: pre|post, params}. Resolver walks the list in array order, applying pre-phase augmentations before damage step and post-phase augmentations after. Pre-augmentations can cancel the damage step (return early). Idempotency rule: each (kind, params_hash) augmentation is applied at most once per tech cast.
 
+- [x] [P1] DEC-003a: support_slots schema refactor (3-scene unlock) | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: SEMANTIC slot names (option C). Each support has 3 slots named for the story beat that unlocks them: `recruitment` (canon recruitment scene → first tech), `story` (canon storyline scene → second tech), `final` (canon final event, often unlocks final tech or equipment that provides final tech). Schema: `support_slots: [{support_id, scene_progression: {recruitment: {tech_id, tier, level_required?}, story: {...}, final: {...}}}]`. The semantic names also make the story correspondence visually obvious in the data file.
+
+- [x] [P2] DEC-005a: innate field — remove or repurpose? | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: KEEP the `innate` field. Playable characters: `innate: "none"` (innates come from equipment, per DEC-005). Enemies: `innate` describes their behavior pattern (steal/performance/combat/dark/healer). Same field, different meaning per character type. Future EnemyData schema will formalize this split. For now, character.schema.json `innate` accepts both `"none"` (playable default) and the behavior enums (enemy default).
+
+- [x] [P1] DEC-008: element_id enum expansion (add "neutral") | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: Add "neutral" to all element_id enums (option A, already applied in previous migration). Neutral is the default for basic attacks (weak/medium/heavy) and physical attacks. 7 elements total in the closed enum: white, red, blue, green, yellow, black, neutral.
+
 ---
 
-## Open Decisions (Round 2)
+## Open Decisions (Round 3)
 
-- [ ] [P1] DEC-003a: support_slots schema refactor (3-scene unlock) | Filed: 2026-07-21
-  - Context: DEC-003's resolution reveals that support_slots cannot be a single {support_id, tier} pair. Each support has 3 unlocks, each tied to a story scene. Need to lock the new schema before any support data files are authored. Affects all 36 supports across 6 bases.
-  - Options:
-    A: support_slots: [{support_id, unlocks: [{scene_id, tech_id, tier, level_required?}]}] — array of 3 unlocks per support
-    B: support_slots: [{support_id, first_unlock: {scene_id, tech_id, tier}, second_unlock: {...}, third_unlock: {...}}] — named slots
-    C: support_slots: [{support_id, scene_progression: {recruitment: {tech_id, tier}, story: {tech_id, tier}, final: {tech_id, tier}}}] — semantic slot names
-  - Default: C: semantic slot names (recruitment/story/final) — most readable, matches the user's prose
-
-- [ ] [P2] DEC-005a: innate field — remove or repurpose? | Filed: 2026-07-21
-  - Context: DEC-005's resolution says no canon character has an innate; innates come from equipment. The current `innate` field on CharacterData is misleading. Need to decide what to do with it.
-  - Options:
-    A: Remove `innate` field entirely from schema. Document that innates are equipment-driven in a separate EquipmentData resource.
-    B: Repurpose `innate` to `innate_source: enum [equipment, tech, none]`. Still on character but describes where innates come from, not what they are.
-    C: Keep `innate` as an enum but make it optional and rare. Most characters have `innate=none`. A few outliers have something specific (e.g., Serge = "white_leader" if we want him to be the player anchor).
-  - Default: A: remove entirely. EquipmentData is the cleaner abstraction. Updating the schema is mechanical; the data is regenerated.
-
-- [ ] [P1] DEC-008: element_id enum expansion (add "neutral") | Filed: 2026-07-21
-  - Context: DEC-006's resolution added a 7th element: neutral. The character.schema.json, tech.schema.json, and element files all reference element IDs as enums. These enums need to be updated to include "neutral". Affects 3+ schema files and 1 element file. Should be a quick patch.
-  - Options:
-    A: Add "neutral" to all element_id enums. Mechanical change. Run the validator, fix any character JSONs that reference the old 6-element set.
-    B: Make element_id a free-form string with validation against a known-elements list. More flexible for future special elements (Time Egg, etc.).
-    C: Defer until a neutral-element character/tech is authored. Until then, no schema change needed.
-  - Default: A: add "neutral" to enums now. Quick, mechanical, prevents future blockers.
+_(none currently — system is unblocked)_

@@ -17,12 +17,54 @@
   "tier_8_tech": "Glide Hook",
   "innate": "none",
   "support_slots": [
-    {"support_id": "leena_poshul", "tier": 1},
-    {"support_id": "riddle", "tier": 2},
-    {"support_id": "starky", "tier": 3},
-    {"support_id": "steena", "tier": 4},
-    {"support_id": "doc", "tier": 5},
-    {"support_id": "angelic_pip", "tier": 6}
+    {
+      "support_id": "leena_poshul",
+      "scene_progression": {
+        "recruitment": {"tech_id": "leena_t1", "tier": 2},
+        "story": {"tech_id": "leena_t4", "tier": 4},
+        "final": {"tech_id": "leena_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "riddle",
+      "scene_progression": {
+        "recruitment": {"tech_id": "riddle_t1", "tier": 2},
+        "story": {"tech_id": "riddle_t4", "tier": 4},
+        "final": {"tech_id": "riddle_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "starky",
+      "scene_progression": {
+        "recruitment": {"tech_id": "starky_t1", "tier": 2},
+        "story": {"tech_id": "starky_t4", "tier": 4},
+        "final": {"tech_id": "starky_t6", "tier": 6}
+      }
+    },
+    {
+      "support_id": "steena",
+      "scene_progression": {
+        "recruitment": {"tech_id": "steena_t1", "tier": 3},
+        "story": {"tech_id": "steena_t5", "tier": 5},
+        "final": {"tech_id": "steena_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "doc",
+      "scene_progression": {
+        "recruitment": {"tech_id": "doc_t1", "tier": 3},
+        "story": {"tech_id": "doc_t5", "tier": 5},
+        "final": {"tech_id": "doc_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "angelic_pip",
+      "scene_progression": {
+        "recruitment": {"tech_id": "angelic_pip_t1", "tier": 3},
+        "story": {"tech_id": "angelic_pip_t5", "tier": 5},
+        "final": {"tech_id": "angelic_pip_t7", "tier": 7}
+      }
+    }
   ],
   "sprite": "",
   "portrait": ""

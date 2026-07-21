@@ -17,12 +17,54 @@
   "tier_8_tech": "Lunairetic",
   "innate": "dark",
   "support_slots": [
-    {"support_id": "guile", "tier": 1},
-    {"support_id": "luccia", "tier": 2},
-    {"support_id": "mojo", "tier": 3},
-    {"support_id": "skelly", "tier": 4},
-    {"support_id": "grobyc", "tier": 5},
-    {"support_id": "devil_pip", "tier": 6}
+    {
+      "support_id": "guile",
+      "scene_progression": {
+        "recruitment": {"tech_id": "guile_t3", "tier": 3},
+        "story": {"tech_id": "guile_t5", "tier": 5},
+        "final": {"tech_id": "guile_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "luccia",
+      "scene_progression": {
+        "recruitment": {"tech_id": "luccia_t3", "tier": 3},
+        "story": {"tech_id": "luccia_t5", "tier": 5},
+        "final": {"tech_id": "luccia_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "mojo",
+      "scene_progression": {
+        "recruitment": {"tech_id": "mojo_t3", "tier": 3},
+        "story": {"tech_id": "mojo_t5", "tier": 5},
+        "final": {"tech_id": "mojo_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "skelly",
+      "scene_progression": {
+        "recruitment": {"tech_id": "skelly_t3", "tier": 3},
+        "story": {"tech_id": "skelly_t5", "tier": 5},
+        "final": {"tech_id": "skelly_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "grobyc",
+      "scene_progression": {
+        "recruitment": {"tech_id": "grobyc_t3", "tier": 3},
+        "story": {"tech_id": "grobyc_t5", "tier": 5},
+        "final": {"tech_id": "grobyc_t7", "tier": 7}
+      }
+    },
+    {
+      "support_id": "devil_pip",
+      "scene_progression": {
+        "recruitment": {"tech_id": "devil_pip_t3", "tier": 3},
+        "story": {"tech_id": "devil_pip_t5", "tier": 5},
+        "final": {"tech_id": "devil_pip_t7", "tier": 7}
+      }
+    }
   ],
   "sprite": "",
   "portrait": ""

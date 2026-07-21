@@ -194,12 +194,32 @@ class TechResolver:
                         status=eff.get("status", ""),
                     )
                 )
-        # Basic attack has no augmentations. The augmentation
-        # chain walk is a future cycle; for now the result
-        # carries an empty list so the view layer has a stable
-        # shape to iterate.
+        # §7.10 step 2: walk the augmentation chain in *execution
+        # order*, not array order. All pre-phase augmentations
+        # (MP discounts, self-buffs, status pre-applications) apply
+        # BEFORE the damage step. All post-phase augmentations
+        # (on-hit chains, post-damage status) apply AFTER. The
+        # observable contract (DEC-007) is that
+        # `applied_augmentations` reflects this order: every pre
+        # entry first (in array order), then every post entry
+        # (in array order). Python's `sorted` is stable, so
+        # intra-phase order is preserved by using the original
+        # index as a tie-breaker.
+        indexed = list(enumerate(tech.augmentations))
+        # Phase rank: "pre" -> 0, "post" -> 1. Unspecified phase
+        # defaults to "post" so the resolver's behavior degrades
+        # safely if a future schema version adds a new phase.
+        def _phase_rank(aug):
+            phase = aug.get("phase", "post")
+            return 0 if phase == "pre" else 1
+
+        applied = [
+            aug for _, aug in sorted(
+                indexed, key=lambda pair: (_phase_rank(pair[1]), pair[0])
+            )
+        ]
         return ActionResult(
             target_scope=tech.target_scope,
             effects=resolved,
-            applied_augmentations=list(tech.augmentations),
+            applied_augmentations=applied,
         )

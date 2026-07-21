@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://remaster-engine.local/schemas/character.schema.json",
   "title": "CharacterData",
-  "description": "Schema for a single character (base or support) in the Remaster Engine. v1.1.0: added 'neutral' to element enum (DEC-006/008), added stat block (DEC-004), removed vestigial 'innate' field (DEC-005/005a option A). Support slot refactor pending DEC-003a.",
+  "description": "Schema for a single character (base or support) in the Remaster Engine. v1.2.0: support_slots refactored to semantic scene_progression (DEC-003a); innate description updated to cover enemies (DEC-005a).",
   "type": "object",
   "required": ["id", "name", "element", "level", "basic_attack", "tier_1_tech", "tier_8_tech", "stats"],
   "additionalProperties": false,
@@ -21,7 +21,7 @@
     "element": {
       "type": "string",
       "enum": ["white", "red", "blue", "green", "yellow", "black", "neutral"],
-      "description": "Color element. Per §3.4 + DEC-006, 7 elements are locked: 6 color elements + 'neutral' for physical/non-elemental abilities and Chrono Cross specials."
+      "description": "Color element. Per §3.4 + DEC-006/008, 7 elements are locked: 6 color elements + 'neutral' for basic attacks (weak/medium/heavy), physical attacks, and Chrono Cross specials."
     },
     "level": {
       "type": "integer",
@@ -38,84 +38,94 @@
       "type": "string",
       "enum": ["steal", "performance", "combat", "dark", "healer", "none"],
       "default": "none",
-      "description": "VESTIGIAL FIELD (DEC-005a option C): preserved because the crons' CharacterData loader depends on it. Per DEC-005, no canon character has an innate; innates come from EQUIPMENT, not elements. This field is kept for forward compatibility (e.g., a hypothetical 'white_leader' if Serge ever gets a player-anchor special). For now, all canon characters have 'innate: none' (or a vestigial element-tag like 'steal' for red, 'performance' for blue, kept for flavor)."
+      "description": "Per DEC-005/005a: dual-purpose field. For PLAYABLE characters, this is always 'none' (innates come from equipment). For ENEMIES, this describes their behavior pattern (steal/performance/combat/dark/healer). Same field, different meaning per character type. Future EnemyData schema will formalize the enemy-specific behavior enums; for now, character.schema.json accepts both."
     },
     "stats": {
       "type": "object",
-      "description": "Base stats for the character. Per DEC-004, stats live on the character. Runtime scaling per level handled by StatResolver autoload.",
+      "description": "Base stats for the character. Per DEC-004, stats live on the character. Runtime scaling (per level) handled by StatResolver autoload.",
       "required": ["hp", "mp", "atk", "def", "spd", "mag"],
       "additionalProperties": false,
       "properties": {
-        "hp": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Base hit points at level 1."
-        },
-        "mp": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Base magic points at level 1."
-        },
-        "atk": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Base physical attack at level 1."
-        },
-        "def": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Base physical defense at level 1."
-        },
-        "spd": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Base speed (turn order). Higher = acts first."
-        },
-        "mag": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Base magic attack at level 1."
-        }
+        "hp": {"type": "integer", "minimum": 1, "description": "Base hit points at level 1."},
+        "mp": {"type": "integer", "minimum": 0, "description": "Base magic points at level 1."},
+        "atk": {"type": "integer", "minimum": 0, "description": "Base physical attack at level 1."},
+        "def": {"type": "integer", "minimum": 0, "description": "Base physical defense at level 1."},
+        "spd": {"type": "integer", "minimum": 0, "description": "Base speed (turn order). Higher = acts first."},
+        "mag": {"type": "integer", "minimum": 0, "description": "Base magic attack at level 1."}
       }
     },
     "basic_attack": {
       "type": "string",
       "minLength": 1,
       "maxLength": 32,
-      "description": "Display name of the basic attack line. Always present, always relevant. Per §3.5 locked basic-attack-line model."
+      "description": "Display name of the basic attack line. Per §3.5, this is the same as tier_1_tech (the basic attack line's tier-1 form). Always present, always relevant."
     },
     "tier_1_tech": {
       "type": "string",
       "minLength": 1,
       "maxLength": 32,
-      "description": "Tech ID reference (lowercase_snake_case) for the tier 1 magic slot tech. Per §3.7 locked per-base techs, points to data/techs/<id>.json."
+      "description": "Display name of the tier 1 tech (per §3.7 locked per-base techs). For bases, this matches basic_attack. For supports, this is the tech unlocked at the recruitment scene."
     },
     "tier_8_tech": {
       "type": "string",
       "minLength": 1,
       "maxLength": 32,
-      "description": "Tech ID reference (lowercase_snake_case) for the tier 8 ultimate. Per §3.7 locked per-base techs."
+      "description": "Display name of the tier 8 ultimate. Per §3.7 locked per-base techs. For supports, this is the tech unlocked at the final scene (often a piece of equipment that provides the tech)."
     },
     "support_slots": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["support_id", "tier"],
+        "required": ["support_id", "scene_progression"],
         "additionalProperties": false,
         "properties": {
           "support_id": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9_]*$"
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "Lowercase snake_case identifier of the support character."
           },
-          "tier": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 8
+          "scene_progression": {
+            "type": "object",
+            "description": "Per DEC-003a: 3 semantic scene slots, each representing a story beat that unlocks a tech.",
+            "required": ["recruitment", "story", "final"],
+            "additionalProperties": false,
+            "properties": {
+              "recruitment": {
+                "type": "object",
+                "description": "First tech unlock: at the canon RECRUITMENT scene. Tends to be tier 2 (early recruits) or tier 3 (late recruits).",
+                "required": ["tech_id", "tier"],
+                "properties": {
+                  "tech_id": {"type": "string", "minLength": 1, "maxLength": 32},
+                  "tier": {"type": "integer", "minimum": 1, "maximum": 8},
+                  "level_required": {"type": "integer", "minimum": 1, "maximum": 99, "description": "Optional: base's level must be at least this to use the tech."}
+                }
+              },
+              "story": {
+                "type": "object",
+                "description": "Second tech unlock: at the canon STORYLINE scene (the support's main character moment). Tends to be tier 4 (early recruits) or tier 5 (late recruits).",
+                "required": ["tech_id", "tier"],
+                "properties": {
+                  "tech_id": {"type": "string", "minLength": 1, "maxLength": 32},
+                  "tier": {"type": "integer", "minimum": 1, "maximum": 8},
+                  "level_required": {"type": "integer", "minimum": 1, "maximum": 99}
+                }
+              },
+              "final": {
+                "type": "object",
+                "description": "Third tech unlock: at the canon FINAL event (often a piece of equipment that grants the tech, or the support's final moment in the story). Tends to be tier 6 (early recruits) or tier 7 (late recruits).",
+                "required": ["tech_id", "tier"],
+                "properties": {
+                  "tech_id": {"type": "string", "minLength": 1, "maxLength": 32},
+                  "tier": {"type": "integer", "minimum": 1, "maximum": 8},
+                  "level_required": {"type": "integer", "minimum": 1, "maximum": 99}
+                }
+              }
+            }
           }
         }
       },
       "default": [],
-      "description": "List of support characters attached to this base at specific tiers. PENDING REFACTOR per DEC-003a: each support should become a 3-unlock structure (recruitment/story/final scenes). Schema kept as-is until DEC-003a is resolved."
+      "description": "List of support characters attached to this base. Per DEC-003a, each support has 3 semantic scene_progression slots (recruitment/story/final) representing the story beats that unlock the support's 3 techs. CharacterData loader flattens this into a list of (support_id, scene_name, tech_id, tier) tuples for downstream consumers."
     },
     "sprite": {
       "type": "string",
