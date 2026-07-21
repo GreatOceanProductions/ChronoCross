@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T12:52:31+00:00",
-  "last_loop_completed": "2026-07-21T12:52:31+00:00",
-  "total_loops_completed": 47,
+  "last_updated": "2026-07-21T13:00:00+00:00",
+  "last_loop_completed": "2026-07-21T13:00:00+00:00",
+  "total_loops_completed": 48,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1115,34 +1115,28 @@
   "last_loop_status": "authored_test",
   "last_loop_action": "tdd-cron cycle 44: test_battle_sim_damage_formula_100_seeded — 6/6 tests passing, commit 47d1ef4, 84/84 total",
   "data_cron": {
-    "last_data_authored": "herle.json",
-    "last_data_type": "character",
-    "last_data_run_at": "2026-07-21T08:51:44+00:00",
+    "last_data_authored": "fireball.json",
+    "last_data_type": "tech",
+    "last_data_run_at": "2026-07-21T13:00:00+00:00",
     "authored": {
       "characters": [
         "kidd",
         "serge",
         "nikki",
         "glenn",
-        "herle"
+        "herle",
+        "norris"
+      ],
+      "techs": [
+        "fireball"
       ],
       "elements": [],
       "maps": [],
       "chapters": []
     },
     "last_status": "committed",
-    "last_action": "Cycle: authored character/herle (5th base, 5/6 bases done) -> validate_data.py 6/6 OK -> commit 689d406",
+    "last_action": "Cycle: authored tech/fireball (red tier-1 single-enemy damage spell from element_catalog.Red[2]) -> validate_data.py 8/8 OK -> pytest 97/97 OK -> commit fc0d676",
     "target_queue": [
-      {
-        "type": "character",
-        "id": "norris",
-        "source": "phase_3_redesign.bases[5] — Norris (Yellow), tier_1 'Sunshower', tier_8 'Top Shot', supports [Sneff, Leah, Mel, Zoah, Viper, Funguy], innate 'healer' per §3.4 yellow=healer"
-      },
-      {
-        "type": "element",
-        "id": "red_fireball",
-        "source": "phase_3_redesign.element_catalog.elements.Red[2] — Fireball (level 1±7, Single Enemy, 'Hurls spheres of flames at enemy')"
-      },
       {
         "type": "element",
         "id": "white_recoverall",
@@ -1151,7 +1145,17 @@
       {
         "type": "element",
         "id": "black_hellbound",
-        "source": "phase_3_redesign.element_catalog.elements.Black[8] — HellBound (level 4±0, Single Enemy, 'Sends your enemy on a trip to hell'). Picked because (a) it's a single-target status-applying tech that exercises the §7.5 status effect engine, and (b) it's a black element which means it's available to Herle — the 5th base the data-cron just authored."
+        "source": "phase_3_redesign.element_catalog.elements.Black[8] — HellBound (level 4±0, Single Enemy, 'Sends your enemy on a trip to hell'). Picked because (a) it's a single-target status-applying tech that exercises the §7.5 status effect engine, and (b) it's a black element which means it's available to Herle."
+      },
+      {
+        "type": "element",
+        "id": "red_firepillar",
+        "source": "phase_3_redesign.element_catalog.elements.Red[7] — FirePillar (level 3±5, Single Enemy, 'Burns enemy in a pillar of flames'). Next tier-3 red damage spell with burn status potential."
+      },
+      {
+        "type": "element",
+        "id": "blue_cure",
+        "source": "phase_3_redesign.element_catalog.elements.Blue[1] — Cure (level 1±7, Single Enemy/Ally, 'Restores HP (Small)'). Heals to mirror Fireball's damage role for blue element."
       }
     ]
   },
