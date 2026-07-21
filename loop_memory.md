@@ -713,3 +713,28 @@ Cumulative memory across cron loops. Each loop appends to this file. Future loop
 - File: `D:\Game Design\Remaster Engine\review.md` — 4 "open" questions, all non-blocking, all resolved into locked_design, preserved for traceability
 
 **The cron loop's content-drafting job remains done. The next move is still the user's.**
+
+## 2026-07-21 — TDD-cron run: Idle (no tdd_cron state, no bugs, all tests pass)
+
+**What I did this run:**
+- Read `cron-jobs/tdd-cron.md` to get the TDD protocol.
+- Read `loop_state.json`, `loop_memory.md`, `game/ISSUES.md`, test files.
+- Ran the test suite via `game/tools/run_tests.sh`: **22/22 tests pass** in 14.76s.
+- Checked for tdd-cron state keys (`tdd_cron`, `test_queue`, `current_test_focus`, `tests_passed`): **none exist** in `loop_state.json`. The current state model is the content-drafting cron, not the TDD cron.
+- Checked `game/ISSUES.md`: **no open issues**, no resolved history.
+- No test queue to draw from, no bug to fix, no failing test.
+
+**Why idle is the correct action:**
+- The tdd-cron protocol says: "If `tdd_cron.test_queue` is empty AND there are no ISSUES.md entries AND no failing tests → log idle status in loop_state.json and exit."
+- All three conditions are met: no queue (state doesn't even have tdd_cron keys), no ISSUES.md entries, all 22 tests pass.
+- The 22 existing tests cover the data validation, daily variant, decisions helper, godot runtime, and snapshot subsystems — these are scaffolding/data tests, not TDD red/green cycles. They were authored before the tdd-cron job was set up.
+- The design document is structurally complete (15/15 sections, 74,293 words) and the content-cron has been idle for 8 consecutive loops (Loops 15-22).
+- The user has not signaled a new direction (PoC start, document extension, or cron loop end).
+
+**State update:**
+- `loop_state.json`: `total_loops_completed: 24`, `last_loop_status: "idle"`, `last_loop_action` describes the 10th consecutive idle (TDD-cron joins the content-cron in idle).
+
+**Options for the user (not for the agent to choose):**
+- Populate the tdd_cron state (`tdd_cron.test_queue`, `tdd_cron.current_test_focus`, `tdd_cron.tests_passed`) to enable the TDD cycle. A natural starting queue: tests for §7.2 (derived PRNG determinism), §7.3 (Tech + TechAugmentation data model), §7.4 (element grid + resistance), §7.5 (status effect engine), §7.6 (form-change state machine), §7.11 (save/migration), §15.10 (4-file seed already partially in place).
+- Start the PoC (§15.4 10-day implementation order) — this is what makes the TDD cycle productive. The infrastructure exists; the queue needs content.
+- End the cron — the design document is complete and the TDD work is awaiting a queue.
