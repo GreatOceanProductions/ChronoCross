@@ -1,0 +1,21 @@
+{
+  "id": "herle",
+  "name": "Herle",
+  "element": "black",
+  "level": 1,
+  "is_base": true,
+  "basic_attack": "Moonshine",
+  "tier_1_tech": "Moonshine",
+  "tier_8_tech": "Lunairetic",
+  "innate": "dark",
+  "support_slots": [
+    {"support_id": "guile", "tier": 1},
+    {"support_id": "luccia", "tier": 2},
+    {"support_id": "mojo", "tier": 3},
+    {"support_id": "skelly", "tier": 4},
+    {"support_id": "grobyc", "tier": 5},
+    {"support_id": "devil_pip", "tier": 6}
+  ],
+  "sprite": "",
+  "portrait": ""
+}
