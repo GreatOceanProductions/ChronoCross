@@ -18,6 +18,9 @@ env/
 # Snapshots (regenerated on every cycle; not source of truth)
 .snapshots/
 
+# Hermes internal temp
+.hermes-tmp.*/
+
 # OS
 .DS_Store
 Thumbs.db
