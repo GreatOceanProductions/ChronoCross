@@ -738,3 +738,83 @@ Cumulative memory across cron loops. Each loop appends to this file. Future loop
 - Populate the tdd_cron state (`tdd_cron.test_queue`, `tdd_cron.current_test_focus`, `tdd_cron.tests_passed`) to enable the TDD cycle. A natural starting queue: tests for §7.2 (derived PRNG determinism), §7.3 (Tech + TechAugmentation data model), §7.4 (element grid + resistance), §7.5 (status effect engine), §7.6 (form-change state machine), §7.11 (save/migration), §15.10 (4-file seed already partially in place).
 - Start the PoC (§15.4 10-day implementation order) — this is what makes the TDD cycle productive. The infrastructure exists; the queue needs content.
 - End the cron — the design document is complete and the TDD work is awaiting a queue.
+
+## 2026-07-21 — TDD-cron run: Idle (Loop 25, no tdd_cron state, no bugs, all tests pass)
+
+**What I did this run:**
+- Read `cron-jobs/tdd-cron.md` to get the TDD protocol.
+- Read `loop_state.json`, the tail of `loop_memory.md`, `game/ISSUES.md`, and the test files.
+- Ran the test suite via `game/tools/run_tests.sh`: **22/22 tests pass** in 1.36s.
+- Confirmed `game/ISSUES.md` is empty (no open issues, no resolved history).
+- Confirmed `loop_state.json` has no `tdd_cron` keys (no `test_queue`, no `current_test_focus`, no `tests_passed`, no `last_test_authored`).
+
+**Why idle is the correct action:**
+- The tdd-cron protocol says: "If `tdd_cron.test_queue` is empty AND there are no ISSUES.md entries AND no failing tests → log idle status in loop_state.json and exit."
+- All three conditions hold: no queue, no bugs, 22/22 green.
+- The 22 existing tests (`test_daily_variant`, `test_decisions_helper`, `test_godot_runtime`, `test_snapshot`, `test_validate_data`) are scaffolding/data-validation tests authored before the tdd-cron job was set up. They are not part of a red/green TDD cycle queue.
+- The cron protocol also says: "Do not invent work. Idleness is correct behavior." — the agent's job here is to maintain state and wait, not to backfill a queue.
+- The design document is structurally complete (15/15 sections, 74,293 words). The PoC (§15.2-§15.6) is the next deliverable but is a different phase (implementation, not design) and requires the user to populate the tdd_cron test queue with intent.
+
+**State update:**
+- `loop_state.json`: `total_loops_completed: 25`, `last_loop_status: "idle"`, `last_loop_action` describes this run.
+
+**Options for the user (not for the agent to choose):**
+- Populate the tdd_cron state with an initial test queue (e.g., §7.2 derived PRNG determinism, §7.3 Tech + TechAugmentation data model, §7.4 element grid + resistance, §7.5 status effect engine, §7.6 form-change state machine, §7.11 save/migration). The agent will then author one failing test per cycle.
+- Start the PoC (§15.4 10-day implementation order) — this is the natural transition from design to implementation.
+- End the cron — both the content-cron and tdd-cron are idle and awaiting user direction.
+
+## 2026-07-21 — Data-authoring-cron run: Authored kidd.json (Loop 27)
+
+**What I did this run:**
+- Read `cron-jobs/data-authoring-cron.md` for the data-authoring protocol.
+- Read `loop_state.json`, `game/ISSUES.md`, `game/data/characters/serge.json`, `game/data/schemas/character.schema.json`, `game/tools/validate_data.py`.
+- Discovered: data_cron state was missing entirely (no `data_cron` block in `loop_state.json`); the only existing character file is `serge.json` (already authored in the initial PoC seed); `game/ISSUES.md` is empty (no open bugs to fix first); no other characters/elements/maps/chapters exist yet.
+- Schema is well-formed (Draft-07, 1 required tier-1/tier-8 fields + id/name/element/level/basic_attack), already validated for serge.json.
+- Validated the environment: `jsonschema` was missing from the project venv at `game/.venv` (rpds sub-dependency broke). Ran `uv pip install -r game/requirements.txt` to fix the project venv, then re-ran validator. Now shows `2/2 files valid` for the existing + new file.
+- Targeted next base in locked design order: **Kidd (Red)** per `phase_3_redesign.bases[1]`. Data sourced from `phase_3_redesign.bases[1]` and `phase_3_redesign.locked_techs_per_base["Kidd (Red)"]`:
+  - element: red, innate: steal (per §3.4 red=steal)
+  - basic_attack: "Red Pin" (matches tier-1 tech — base identity is the basic-attack line)
+  - tier_1_tech: "Red Pin", tier_8_tech: "Hotshot"
+  - support_slots (6): greco(1), janice(2), miki(3), orcha(4), zappa(5), draggy(6)
+- Authored `game/data/characters/kidd.json` (21 lines) matching character.schema.json — all required fields present, `support_slots` items each have `support_id` (lowercase snake_case) + `tier` (1-6 within schema max of 8), sprite/portrait empty strings per PoC placeholder convention.
+- Ran `python game/tools/validate_data.py` — `2/2 files valid` (kidd + serge). No regressions.
+- Updated `loop_state.json` with `data_cron` block: `last_data_authored: kidd.json`, `last_data_type: character`, `authored: {characters: [kidd], elements: [], maps: [], chapters: []}`. Bumped `total_loops_completed` to 27, `last_loop_status: data_authored`, refreshed `last_loop_completed` to current ISO timestamp.
+- Picked up the prior cron idle housekeeping (loop_state.json + loop_memory.md pending from tdd-cron loops 24, 25) in this commit per the protocol's `git add -A` directive.
+
+**Commit message (per protocol):**
+```
+data: add characters/kidd
+
+[locked source: phase_3_redesign.bases[1] — Kidd (Red), tier-1 "Red Pin", tier-8 "Hotshot", innate=steal per §3.4; supports: Greco, Janice, Miki, Orcha, Zappa, Draggy]
+```
+
+**State at end of run:**
+- `game/data/characters/`: serge.json, kidd.json (2/42 locked character files: 2/6 bases, 0/36 supports)
+- `game/data/elements/`: empty (0/126 elements; no element schema authored yet)
+- `game/data/maps/`: empty
+- `game/data/chapters/`: empty
+- Validator: 2/2 files valid (no regressions)
+- ISSUES.md: still empty (no data file schema violations encountered this run)
+- loop_state.json: `data_cron` block initialized; `total_loops_completed: 27`
+
+**Next target:** nikki (Blue base) — the 3rd base in locked design order. Will author `game/data/characters/nikki.json` next run with: element blue, basic_attack "Grand Finale", tier_1 "Grand Finale", tier_8 "Limelight", innate "performance" (per §3.4 blue=performance), supports [marcy, korcha_macha, fargo, irene, orhla, pierre].
+
+**Tooling note for future loops:**
+- The project venv at `game/.venv` was missing the `jsonschema` python package (and its `rpds.rpds` native extension). Fixed once via `uv pip install -r game/requirements.txt`. If a future loop sees `ERROR: jsonschema not installed`, this is the fix.
+- The hermes-agent shell exports `PYTHONPATH` pointing at `C:\Users\14239\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages`, which prepends hermes-agent's jsonschema install (newer, with a missing `rpds.rpds` wheel). `validate_data.py` has a sys.path scrub to handle this, but it works only when invoked from the project venv. Run pattern that works:
+  ```
+  unset PYTHONPATH PYTHONHOME
+  cd game && source .venv/Scripts/activate
+  cd .. && python game/tools/validate_data.py
+  ```
+- `git add -A` per protocol picks up any pending housekeeping from prior cron runs (e.g., the tdd-cron idle loop 25 state bump and loop_memory.md entries). This is by design — keeps the cron loop's commit history single-stream.
+
+**Long-run state of the data-authoring loop:**
+- This is the FIRST non-idle data-authoring run since the cron was set up. The PoC seed (Loops 0-1) authored serge.json via the initial 4-file seed; the data-authoring cron has been waiting for the user to either (a) populate the queue, (b) start the PoC, or (c) end the cron. The user did none of those — they ran the cron with no queue. Per the protocol's "If all 6 bases + 36 supports + 126 elements + 10 chapters are authored and validated, log idle" rule, I'm not idle (2/178 done). The protocol doesn't explicitly say "do nothing if the queue is empty" for data-cron the way tdd-cron does, so I'm proceeding: pick the next natural target from the locked design and author it.
+- 176 files remaining: 4 bases, 36 supports, 126 elements (needs new schema), 10 chapters (needs new schema), maps (count TBD). The data-authoring cron will be productive for many cycles.
+- The element, map, and chapter schemas don't exist yet (`game/data/schemas/` only has `character.schema.json`). Per protocol, schema is the contract — but the protocol only addresses validation of the existing schema. Authoring new data without a schema requires first creating the schema, which is a different kind of work (schema-authoring, not data-authoring). Future loops will need to add `element.schema.json`, `map.schema.json`, `chapter.schema.json` before elements/maps/chapters can be authored. This is a known scope expansion that the data-cron should flag for the user.
+
+**Options for the user (not for the agent to choose):**
+- Add element / map / chapter schemas (`game/data/schemas/element.schema.json`, `map.schema.json`, `chapter.schema.json`) so the data-authoring loop can proceed beyond characters. Natural starting schemas: element matches the locked element_catalog (name, level, target, description); chapter matches the 10-chapter structure (party progression, level range, primary location); map matches the original's "field" / "dungeon" / "town" dichotomy.
+- End the cron — design document is complete, and the data-cron is now productive but awaits more schema support to make full use of the locked design.
+- Let the data-cron continue at its natural pace (one character per cycle every 2 hours = ~3 days for the remaining 4 bases, then ~9 days for the 36 supports, then schema-dependent work on 126 elements + 10 chapters + maps).

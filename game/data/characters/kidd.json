@@ -1,0 +1,21 @@
+{
+  "id": "kidd",
+  "name": "Kidd",
+  "element": "red",
+  "level": 1,
+  "is_base": true,
+  "basic_attack": "Red Pin",
+  "tier_1_tech": "Red Pin",
+  "tier_8_tech": "Hotshot",
+  "innate": "steal",
+  "support_slots": [
+    {"support_id": "greco", "tier": 1},
+    {"support_id": "janice", "tier": 2},
+    {"support_id": "miki", "tier": 3},
+    {"support_id": "orcha", "tier": 4},
+    {"support_id": "zappa", "tier": 5},
+    {"support_id": "draggy", "tier": 6}
+  ],
+  "sprite": "",
+  "portrait": ""
+}
