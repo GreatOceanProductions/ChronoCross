@@ -1,0 +1,21 @@
+{
+  "id": "glenn",
+  "name": "Glenn",
+  "element": "green",
+  "level": 1,
+  "is_base": true,
+  "basic_attack": "Dash and Gash",
+  "tier_1_tech": "Dash and Gash",
+  "tier_8_tech": "Sonic Sword",
+  "innate": "combat",
+  "support_slots": [
+    {"support_id": "karsh", "tier": 1},
+    {"support_id": "razzly", "tier": 2},
+    {"support_id": "radius", "tier": 3},
+    {"support_id": "van", "tier": 4},
+    {"support_id": "sprigg", "tier": 5},
+    {"support_id": "turnup_neofio", "tier": 6}
+  ],
+  "sprite": "",
+  "portrait": ""
+}
