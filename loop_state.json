@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "started": "2026-07-19",
   "last_updated": "2026-07-21T04:53:00+00:00",
-  "last_loop_completed": "2026-07-21T04:53:00+00:00",
-  "total_loops_completed": 31,
+  "last_loop_completed": "2026-07-21T08:53:00+00:00",
+  "total_loops_completed": 32,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1112,8 +1112,8 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "idle",
-  "last_loop_action": "15th consecutive idle tdd-cron loop; test queue empty, ISSUES.md empty, 22/22 tests pass; per protocol WHEN TO BE IDLE",
+  "last_loop_status": "planned",
+  "last_loop_action": "Planner tick 32: seeded tdd_cron.test_queue (5 items), data_cron.target_queue (3 items), scaffolding_cron.target_queue (2 items). All items derived from locked design (no open decisions).",
   "data_cron": {
     "last_data_authored": "nikki.json",
     "last_data_type": "character",
@@ -1127,7 +1127,26 @@
       "elements": [],
       "maps": [],
       "chapters": []
-    }
+    },
+    "last_status": "queued",
+    "last_action": "Planner populated target_queue (3 bases: Glenn, Herle, Norris); data-cron will pick queue[0]",
+    "target_queue": [
+      {
+        "type": "character",
+        "id": "glenn",
+        "source": "phase_3_redesign.bases[3] — Glenn (Green), tier_1 'Dash and Gash', tier_8 'Sonic Sword', supports [Karsh, Razzly, Radius, Van, Sprigg, Turnup+NeoFio]"
+      },
+      {
+        "type": "character",
+        "id": "herle",
+        "source": "phase_3_redesign.bases[4] — Herle (Black), tier_1 'Moonshine', tier_8 'Lunairetic', supports [Guile, Luccia, Mojo, Skelly, Grobyc, Devil Pip]"
+      },
+      {
+        "type": "character",
+        "id": "norris",
+        "source": "phase_3_redesign.bases[5] — Norris (Yellow), tier_1 'Sunshower', tier_8 'Top Shot', supports [Sneff, Leah, Mel, Zoah, Viper, Funguy]"
+      }
+    ]
   },
   "snapshot_cron": {
     "last_snapshot": {
@@ -1143,13 +1162,64 @@
     }
   },
   "tdd_cron": {
-    "last_status": "idle",
-    "last_action": "no work to do",
-    "last_run_at": "2026-07-21T04:53:00+00:00",
-    "test_queue": [],
+    "last_status": "queued",
+    "last_action": "Planner populated test_queue (5 items); first run will pick queue[0]",
+    "last_run_at": "2026-07-21T08:53:00+00:00",
+    "test_queue": [
+      {
+        "name": "test_determinism_prng_seeded",
+        "target_file": "game/tests/test_determinism.py",
+        "expected_failure": "Module Determinism not found / PRNG not deterministic across instances",
+        "spec_ref": "§7.2 derived PRNGs scoped by tag (combat, dialog, treasure)"
+      },
+      {
+        "name": "test_character_data_loads",
+        "target_file": "game/tests/test_character_data.py",
+        "expected_failure": "CharacterData.gd missing / fails to load data/characters/serge.json",
+        "spec_ref": "§15.4 step 1 (scaffold order), §6.5 schema-validated data layer"
+      },
+      {
+        "name": "test_tech_data_loads",
+        "target_file": "game/tests/test_tech_data.py",
+        "expected_failure": "TechData.gd missing / fails to load element JSON",
+        "spec_ref": "§15.4 step 2, §7.3 Tech + TechAugmentation data model"
+      },
+      {
+        "name": "test_party_manager_active_roster",
+        "target_file": "game/tests/test_party_manager.py",
+        "expected_failure": "PartyManager.gd autoload missing / cannot add/remove base",
+        "spec_ref": "§15.4 step 3, §7.7 6-character party formation"
+      },
+      {
+        "name": "test_tech_resolver_basic_attack",
+        "target_file": "game/tests/test_tech_resolver.py",
+        "expected_failure": "TechResolver.gd missing / basic_attack line does not resolve",
+        "spec_ref": "§15.4 step 5, §7.10 combat engine, §3.5 basic attack line + augmentation"
+      }
+    ],
     "tests_passed": [],
-    "current_test_focus": null,
+    "current_test_focus": "test_determinism_prng_seeded",
     "last_test_authored": null,
     "cycle_count": 2
+  },
+  "scaffolding_cron": {
+    "last_status": "queued",
+    "last_action": "Planner initialized scaffolding_cron block + target_queue (2 architecture items per §15.4 order)",
+    "last_scaffold_authored": null,
+    "last_run_at": "2026-07-21T08:53:00+00:00",
+    "target_queue": [
+      {
+        "file": "game/scripts/data/CharacterData.gd",
+        "category": "data_class",
+        "test_required": "game/tests/test_character_data.py",
+        "spec_ref": "§15.4 step 1, §6.5 schema-validated data layer, §7.3 typed data resources"
+      },
+      {
+        "file": "game/scripts/data/TechData.gd",
+        "category": "data_class",
+        "test_required": "game/tests/test_tech_data.py",
+        "spec_ref": "§15.4 step 2, §7.3 Tech + TechAugmentation data model, §3.8 8 magic tiers"
+      }
+    ]
   }
 }

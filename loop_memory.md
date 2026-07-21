@@ -978,3 +978,41 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - **End the TDD cron** — 15 idle loops; if not yet ready for TDD work, the cron can be suspended.
 
 **The next move is the user's.**
+
+## 2026-07-21 — Planner tick 32: seeded tdd_cron + data_cron + scaffolding_cron queues
+
+**What I did this tick:**
+- Read working set per planner-cron.md: state, decisions, issues, memory tail, spec, existing work.
+- Verified: `DECISIONS.md` empty (no timeouts to apply), `game/ISSUES.md` empty, 22/22 tests pass, no open blockers.
+- Verified current queues: `tdd_cron.test_queue` empty (15 consecutive idle loops per tdd-cron), `data_cron` had no `target_queue` (data-cron has been picking ad-hoc from `phase_3_redesign.bases`), `scaffolding_cron` block was uninitialized (no scaffold work ever done).
+- Authored queues in `loop_state.json` (5-item cap respected per protocol):
+  - **tdd_cron.test_queue (5)**: test_determinism_prng_seeded, test_character_data_loads, test_tech_data_loads, test_party_manager_active_roster, test_tech_resolver_basic_attack. Ordered by dependency: data layer (PRNG) → CharacterData → TechData → PartyManager → TechResolver, per the §15.4 PoC scaffold order.
+  - **data_cron.target_queue (3)**: glenn, herle, norris — the 3 remaining bases in `phase_3_redesign.bases[3..5]`. All have locked tier-1/tier-8 techs and locked support lists in `phase_3_redesign` — no open decisions block them.
+  - **scaffolding_cron.target_queue (2)**: `CharacterData.gd` (per §15.4 step 1), `TechData.gd` (per §15.4 step 2). Each has a test_required entry pointing at the corresponding tdd-cron test.
+- Initialized `scaffolding_cron` block (was absent from state). Did NOT skip ahead in scaffold order per scaffolding-cron.md "Don't skip ahead" rule.
+- Bumped `total_loops_completed` to 32, set `last_loop_status: "planned"`, refreshed `last_loop_completed` to current ISO timestamp.
+- No code or data written (planner is not allowed to).
+- No new decisions filed (no blockers surfaced).
+
+**Reasoning:**
+- The TDD cron has been idle 15 loops because `test_queue` was never populated. Per tdd-cron.md §"Protocol step 3", when the queue is empty the cron is allowed to add *one* test idea per run — but this approach gives the agent too much discretion. The planner's job is to pre-populate the queue based on dependency order, so the TDD cron becomes a strict RED-GREEN-REFACTOR cycle rather than a queue-population cycle.
+- The data cron has been productive (3/6 bases done: serge, kidd, nikki) but it has been picking its own targets by inspecting `phase_3_redesign.bases`. The planner makes the order explicit and pre-queues the next 3 bases so the cron can be one-file-per-cycle without re-deriving the order each run.
+- The scaffolding cron has never been initialized. The first 2 architecture files (CharacterData.gd, TechData.gd) are the §15.4 foundation — they enable the data layer that the TDD tests target. Without scaffolding-cron, the TDD tests will fail at the "module not found" stage; the scaffolding queue makes the dependency explicit.
+- All 10 items (5 tests + 3 data + 2 scaffold) trace back to locked design (`phase_3_redesign.bases`, `phase_3_redesign.element_catalog`, `phase_3_redesign.locked_techs_per_base`, §7 engine modifications, §15.4 PoC order). No invented data.
+- Capped each queue at the protocol's max (5 for tdd, 5 for data, 1-2 for scaffold). Next planner tick will refresh with the next 3-5 items as the current ones complete.
+
+**State at end of tick:**
+- `tdd_cron.test_queue`: 5 items (PRNG, CharacterData, TechData, PartyManager, TechResolver)
+- `data_cron.target_queue`: 3 items (glenn, herle, norris)
+- `scaffolding_cron.target_queue`: 2 items (CharacterData.gd, TechData.gd)
+- `tdd_cron.current_test_focus`: test_determinism_prng_seeded (queue[0])
+- `data_cron.target_id` and `scaffolding_cron.target_file`: not set (cros will pick queue[0] on next run per their protocols)
+- `total_loops_completed`: 32
+- `last_loop_status`: "planned"
+
+**What the next cron runs should do (informational, not instructions):**
+- **tdd-cron next run** (~30 min): pick `test_queue[0]` = test_determinism_prng_seeded. Author the test (RED), write minimum Determinism.gd to pass (GREEN), commit, advance to queue[1]. Note: queue[0] is a data-layer test that will require Determinism.gd to exist; if scaffolding-cron hasn't run yet, this test will fail at "module not found" — that is the *correct* RED-state for the first TDD cycle.
+- **data-cron next run** (~2 hr): pick `target_queue[0]` = character glenn. Author `game/data/characters/glenn.json` per schema, validate, commit, advance to queue[1].
+- **scaffolding-cron next run** (~6 hr): pick `target_queue[0]` = CharacterData.gd. Author the GDScript class + corresponding test, commit, advance to queue[1].
+
+**Note for the user:** the 3 cron loops are now coordinated through the planner's queues instead of each cron making independent decisions. This is the §9.5 design-gate protocol applied at the cron level — the planner is the gate, the work crons are the executors.
