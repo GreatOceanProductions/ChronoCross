@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T13:00:00+00:00",
-  "last_loop_completed": "2026-07-21T13:00:00+00:00",
-  "total_loops_completed": 48,
+  "last_updated": "2026-07-21T13:30:00+00:00",
+  "last_loop_completed": "2026-07-21T13:30:00+00:00",
+  "total_loops_completed": 50,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1112,8 +1112,8 @@
       "9. If no progress can be made (everything blocked on review), log 'idle' status in loop_state.json and stay quiet"
     ]
   },
-  "last_loop_status": "authored_test",
-  "last_loop_action": "tdd-cron cycle 44: test_battle_sim_damage_formula_100_seeded — 6/6 tests passing, commit 47d1ef4, 84/84 total",
+  "last_loop_status": "planner_tick",
+  "last_loop_action": "planner-cron cycle 49: queued 3 new TDD tests (test_party_manager_add_remove_member, test_tech_resolver_cost_mp_deducts_and_blocks_when_insufficient, test_tech_resolver_pre_damage_status_can_cancel_damage_step), promoted 1 element meta-def to data-cron target_queue (white), capped scaffolding-cron target_queue to 5 items (promoted ElementGrid.gd to position 3, deferred SaveSystem + scenes). 97/97 tests green, 8/8 data files valid. 0 decisions filed.",
   "data_cron": {
     "last_data_authored": "fireball.json",
     "last_data_type": "tech",
@@ -1138,14 +1138,19 @@
     "last_action": "Cycle: authored tech/fireball (red tier-1 single-enemy damage spell from element_catalog.Red[2]) -> validate_data.py 8/8 OK -> pytest 97/97 OK -> commit fc0d676",
     "target_queue": [
       {
+        "type": "element_meta",
+        "id": "white",
+        "source": "phase_3_redesign.element_catalog.elements.White + DEC-001 mirrored pairs + DEC-006 'neutral as 7th'. The first of the 7 element meta-definitions to be authored. White is the first base's element (Serge); the §7.4 element grid REQUIRES this data file to load the canonical resistance chart. Without any data/elements/*.json, the future ElementGrid.gd autoload (scaffolding queue position 3) has nothing to load. Author the file with: id=white, display_name=White, color_hex=#FFFFFF, base_damage_type=magic, resistances={white:1.0, red:0.5, blue:1.0, green:1.0, yellow:1.0, black:2.0, neutral:1.0} per DEC-001 (white is strong against black, weak against red)."
+      },
+      {
         "type": "element",
         "id": "white_recoverall",
-        "source": "phase_3_redesign.element_catalog.elements.White[5] — RecoverAll (level 3±5, All Allies, 'Restores HP (Medium)')"
+        "source": "phase_3_redesign.element_catalog.elements.White[5] — RecoverAll (level 3±5, All Allies, 'Restores HP (Medium)'). Now that the white element meta-def is on disk, this is the natural first spell: it's Serge's element, and it's a group heal (different from Fireball's single-target damage) so it exercises the schema's target_scope=ALL_ALLIES path."
       },
       {
         "type": "element",
         "id": "black_hellbound",
-        "source": "phase_3_redesign.element_catalog.elements.Black[8] — HellBound (level 4±0, Single Enemy, 'Sends your enemy on a trip to hell'). Picked because (a) it's a single-target status-applying tech that exercises the §7.5 status effect engine, and (b) it's a black element which means it's available to Herle."
+        "source": "phase_3_redesign.element_catalog.elements.Black[8] — HellBound (level 4±0, Single Enemy, 'Sends your enemy on a trip to hell'). Picked because (a) it's a single-target status-applying tech that exercises the §7.5 status effect engine, and (b) it's a black element which means it's available to Herle. After this is authored, the next tick should queue the black element meta-def (deferred — the planner's one-element-meta-per-tick pace keeps the data-cron from blocking on schema work)."
       },
       {
         "type": "element",
@@ -1174,9 +1179,46 @@
   },
   "tdd_cron": {
     "last_status": "committed",
-    "last_action": "test: ElementGrid compute_resistance — §7.4 element resistance + DEC-001 chart — 6 tests, commit 329e509",
-    "last_run_at": "2026-07-21T12:30:00+00:00",
+    "last_action": "test: test_canonical_chart_is_multiplicatively_inverse_across_diagonal — section 7.4 multiplicative inverse property (chart[A][B] * chart[B][A] == 1.0 for all non-self pairs). Plus 6 uncommitted canonical chart tests now in commit: 7x7 hexagonal graph, mirrored pairs, neutral row, compute_resistance end-to-end. 104/104 tests pass. Authoring CANONICAL_CHART constant in element_grid.py.",
+    "last_run_at": "2026-07-21T13:30:00+00:00",
     "test_queue": [
+      {
+        "id": "test_party_manager_add_remove_member",
+        "source_section": "§7.7 PartyManager active roster add/remove + capacity 6 (§3.3)",
+        "description": "PartyManager add_member/remove_member API contracts: max capacity is 6 (the §3.3 active party size, a hard ceiling); adding beyond capacity raises; removing a non-member raises; the order of add calls determines turn-order priority (§7.7 'order of add is the order in battle'). The base Python mirror game/tools/party_manager.py already has active_roster; this cycle extends it with the add/remove API. Per §7.7 test surface items (a)+(b).",
+        "expected_failure": "PartyManager object has no attribute 'add_member' / 'remove_member', or capacity is not enforced, or remove on non-member is silent",
+        "depends_on": [
+          "test_party_manager_active_roster"
+        ],
+        "priority": "medium",
+        "scope_notes": "Python mirror in game/tools/party_manager.py. The GDScript PartyManager.gd autoload (scaffolding-cron queue[0]) will mirror the same contract. No spec ambiguity; the §3.3 + §7.7 design is locked.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_tech_resolver_cost_mp_deducts_and_blocks_when_insufficient",
+        "source_section": "§7.10 test surface (e) — energy economy, §7.3 cost_mp field",
+        "description": "TechResolver enforces cost_mp: a tech with cost_mp=3 deducts 3 from the caster's MP on successful resolve, and an attempt to resolve when MP < cost_mp returns an insufficient_mp result (no deduction, no side-effects). Tests: (a) MP is deducted exactly by cost_mp; (b) MP floor is 0 (not negative); (c) insufficient_mp path is a hard short-circuit; (d) insufficient_mp does NOT consume the augmentation chain (pre-phase MP_DISCOUNT augmentations don't roll when the cost check fails).",
+        "expected_failure": "TechResolver.resolve does not check cost_mp / deducts more than cost_mp / runs augmentations even when cost is unmet / returns negative MP",
+        "depends_on": [
+          "test_tech_resolver_basic_attack"
+        ],
+        "priority": "medium",
+        "scope_notes": "Python mirror in game/tools/tech_resolver.py. Pairs with the cost_mp data field on techs (already on dash_and_slash.json + fireball.json). No open decisions. The §7.10 test surface item (e) 'energy economy' is one of 7 listed in the spec.",
+        "cycles_to_complete": 1
+      },
+      {
+        "id": "test_tech_resolver_pre_damage_status_can_cancel_damage_step",
+        "source_section": "§7.3 augmentation chain + DEC-007 — PRE_DAMAGE_STATUS can return early",
+        "description": "DEC-007 says: 'A pre-phase augmentation can cancel the damage step (return early).' Pin the contract with two tests: (a) a tech whose sole pre-phase augmentation is PRE_DAMAGE_STATUS (e.g., a sleep spell) does NOT execute the DAMAGE effect — only the APPLY_STATUS effect runs, no damage is dealt; (b) a pre-phase MP_DISCOUNT that drops the effective cost below available MP does NOT trigger the cost check (i.e., MP_DISCOUNT is the augmentation that consumes the cost check). Confirms the §7.3 'pre-phase runs first, can short-circuit damage' contract.",
+        "expected_failure": "TechResolver does damage even when a pre-phase PRE_DAMAGE_STATUS-only tech is cast / MP_DISCOUNT does not interact with the cost gate",
+        "depends_on": [
+          "test_tech_resolver_basic_attack",
+          "test_tech_resolver_augmentation_chain"
+        ],
+        "priority": "medium",
+        "scope_notes": "Python mirror in game/tools/tech_resolver.py. The DEC-007 'pre-phase can cancel damage step' is in the resolved decisions list but not yet pinned by a test. This is the right cycle to add it. A future test will pin the MP_DISCOUNT-vs-cost-gate interaction.",
+        "cycles_to_complete": 1
+      },
       {
         "id": "test_battle_log_save_load_roundtrip",
         "source_section": "7.10 test surface (d) + 7.11 (save system)",
@@ -1186,20 +1228,8 @@
           "test_battle_sim_damage_formula_100_seeded",
           "test_save_system_roundtrip"
         ],
-        "priority": "medium",
-        "scope_notes": "Python mirror in game/tools/battle_log.py. Depends on the §7.11 SaveSystem being authored first (scaffolding-cron item, future cycle). Place in queue now so the dependency is visible; will be skipped until SaveSystem is in place.",
-        "cycles_to_complete": 1
-      },
-      {
-        "id": "test_element_grid_full_7x7_chart",
-        "source_section": "§7.4 element grid full 7x7 hexagonal graph + DEC-001 + DEC-006",
-        "description": "The full §7.4 hexagonal resistance chart: each of the 6 color elements is strong against exactly 2 and weak against exactly 2. Pin the full 7x7 chart (per DEC-006, neutral is the 7th) so the engine has a complete reference for the original Chrono Cross element relationships. Tests: every element row has exactly 7 entries (including self=1.0), every strong pair has the matching 0.5 mirror, the neutral row is all 1.0.",
-        "expected_failure": "ElementGrid loaded from data/elements/*.json (if files exist) or from a hardcoded 7x7 fixture; need to author the canonical chart in the test or as a JSON fixture.",
-        "depends_on": [
-          "test_element_grid_compute_resistance"
-        ],
-        "priority": "medium",
-        "scope_notes": "Author the canonical 7x7 chart as a hardcoded fixture in the test (the on-disk data/elements/resistances.json is a future translator output per §8.4). The full chart is small enough to inline.",
+        "priority": "low",
+        "scope_notes": "Python mirror in game/tools/battle_log.py. Depends on the §7.11 SaveSystem being authored first (scaffolding-cron item, future cycle). Place in queue now so the dependency is visible; will be skipped until SaveSystem is in place. Demoted to low priority because the SaveSystem is at scaffolding queue position 6 of 5 (capped) and the tdd-cron shouldn't idle waiting on it.",
         "cycles_to_complete": 1
       }
     ],
@@ -1266,13 +1296,27 @@
         "commit": "329e509",
         "passed_at": "2026-07-21T12:30:00+00:00",
         "note": "6 tests in one cycle: canonical_strong_offense, canonical_strong_defense, neutral_pair, unknown_attacker, unknown_defender, chart_introspection. The §7.4 compute_resistance contract in its minimal form. Future cycle will pin the full 7x7 hexagonal graph per DEC-006."
+      },
+      {
+        "name": "test_canonical_chart_is_multiplicatively_inverse_across_diagonal",
+        "target_file": "game/tests/test_element_grid.py",
+        "commit": "pending",
+        "passed_at": "2026-07-21T13:30:00+00:00",
+        "note": "Pins the section 7.4 multiplicative inverse property: chart[A][B] * chart[B][A] == 1.0 for all non-self pairs. A stronger form of DEC-001 mirror rule (the existing mirrored-pairs test checks the 0.5<->2.0 cases specifically; this test checks ALL non-self cells, including the 1.0<->1.0 neutral cases). Verified by temporarily corrupting CANONICAL_CHART (0.5->0.6) — test correctly detected the violation with a clear assertion message."
+      },
+      {
+        "name": "test_canonical_chart_full_7x7 (bundle: 6 tests)",
+        "target_file": "game/tests/test_element_grid.py",
+        "commit": "pending",
+        "passed_at": "2026-07-21T13:30:00+00:00",
+        "note": "Cycle 12 bundle: test_canonical_chart_is_exposed_as_module_constant, test_canonical_chart_every_row_has_seven_entries, test_canonical_chart_every_color_element_has_two_strong_and_two_weak, test_canonical_chart_strong_pairs_have_matching_weak_mirror, test_canonical_chart_neutral_row_is_all_one, test_canonical_chart_compute_resistance_returns_strong_pair_value. The full 7x7 canonical chart pinned at the Python mirror level per section 7.4 + DEC-001 + DEC-006. CANONICAL_CHART constant in element_grid.py implements the original Chrono Cross hexagonal graph: white -> black -> yellow -> green -> blue -> red -> white, with each element strong vs +1/+2 in the cycle and weak vs -1/-2. Neutral is 1.0 against everything."
       }
     ],
-    "current_test_focus": "test_element_grid_full_7x7_chart",
-    "last_test_authored": "test_element_grid_compute_resistance",
-    "cycle_count": 11,
-    "last_run_action": "authored test + green (94/94 pass)",
-    "last_run_completed": "2026-07-21T12:30:00+00:00"
+    "current_test_focus": "test_party_manager_add_remove_member",
+    "last_test_authored": "test_canonical_chart_is_multiplicatively_inverse_across_diagonal",
+    "cycle_count": 12,
+    "last_run_action": "authored test + green (104/104 pass)",
+    "last_run_completed": "2026-07-21T13:30:00+00:00"
   },
   "scaffolding_cron": {
     "last_status": "completed",
@@ -1297,6 +1341,12 @@
         "spec_ref": "section 15.4 step 4, section 7.2 derived PRNGs per tag, section 6.4 typed subset"
       },
       {
+        "file": "game/scripts/autoloads/ElementGrid.gd",
+        "category": "autoload",
+        "test_required": "game/tests/test_element_grid_godot.gd",
+        "spec_ref": "section 7.4 element grid, section 15.4 step 2b (data-driven autoload), DEC-001 + DEC-006. The §7.4 element grid REQUIRES the on-disk data/elements/*.json files (queued by data-cron this tick) to load. Scaffolding this autoload will exercise the same code path that tdd-cron's test_element_grid_full_7x7_chart is pinning at the Python mirror level."
+      },
+      {
         "file": "game/scripts/autoloads/TechResolver.gd",
         "category": "autoload",
         "test_required": "game/tests/test_tech_resolver_godot.gd",
@@ -1307,25 +1357,8 @@
         "category": "subsystem",
         "test_required": "game/tests/test_combat_simulator_godot.gd",
         "spec_ref": "section 15.4 step 6, section 6.7 ECS-style combat, section 7.10 combat engine"
-      },
-      {
-        "file": "game/scripts/autoloads/ChapterController.gd",
-        "category": "autoload",
-        "test_required": "game/tests/test_chapter_controller_godot.gd",
-        "spec_ref": "section 15.4 step 7, section 7 chapter transition, section 12.4 / 12.6 form-change boundaries"
-      },
-      {
-        "file": "game/scripts/autoloads/SaveSystem.gd",
-        "category": "autoload",
-        "test_required": "game/tests/test_save_system_godot.gd",
-        "spec_ref": "section 15.4 step 8, .tres save format, schema_version migration"
-      },
-      {
-        "file": "game/scenes/character_screen.tscn",
-        "category": "scene",
-        "test_required": "game/tests/test_character_screen_godot.gd",
-        "spec_ref": "section 15.4 step 9, section 3.10 element-UI working assumption"
       }
-    ]
+    ],
+    "queue_capped_note": "Cap of 5 items per planner-cron guideline. SaveSystem.gd, ChapterController.gd, and the scene files (character_screen.tscn etc.) are deferred to future planner ticks. CombatSimulator.gd kept in queue (step 6 of §15.4) because the tdd-cron has already pinned 10 tests against the Python mirror battle_sim.py — the GDScript port is the next milestone for combat integration. ElementGrid.gd promoted ahead of TechResolver.gd because the §7.4 element grid is data-driven and the data files are being authored in parallel by the data-cron this tick."
   }
 }
