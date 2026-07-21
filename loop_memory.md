@@ -844,3 +844,82 @@ data: add characters/kidd
 - Populate the tdd_cron state with an initial test queue (e.g., §7.2 derived PRNG determinism, §7.3 Tech + TechAugmentation data model, §7.4 element grid + resistance, §7.5 status effect engine, §7.6 form-change state machine, §7.11 save/migration, §15.10 4-file seed expansion). The agent will then author one failing test per cycle.
 - Start the PoC (§15.4 10-day implementation order) — this is the natural transition from design to implementation and is what gives the tdd-cron real work.
 - End the cron — both the content-cron (idle 14+ loops) and tdd-cron (idle 5+ loops) are idle and awaiting user direction.
+
+
+## 2026-07-21 — Loop 29: TDD cron idle (12th consecutive idle)
+
+**What I did this loop:**
+- Read `cron-jobs/tdd-cron.md`, `loop_state.json`, `loop_memory.md`, `game/ISSUES.md`, and ran the full test suite.
+- Test suite: 22/22 pass via `game/tools/run_tests.sh`.
+- `game/ISSUES.md`: empty (no open bugs).
+- `DECISIONS.md`: empty (no open decisions).
+- `loop_state.json`: still has no `tdd_cron` / `test_queue` / `current_test_focus` / `tests_passed` / `last_test_authored` keys. The TDD cron has never been populated with a queue, so every loop is correctly idle.
+- No work authored. Logged idle in `loop_state.json` (incremented `total_loops_completed` to 29, set `last_loop_status: "idle"`, updated `last_loop_completed` to 2026-07-21T03:17:10+00:00).
+- Did NOT commit. Per protocol, idle is not a commit-worthy change; `loop_state.json` is a working file, not a deliverable artifact.
+
+**Why idle is the correct action here (verbatim from the protocol):**
+> "If `tdd_cron.test_queue` is empty AND there are no ISSUES.md entries AND no failing tests: Log idle status in loop_state.json... Do not invent work. Idleness is correct behavior."
+
+All three conditions hold. Inventing tests would be exactly the anti-pattern the protocol warns against — the granularity is the point, and "I should test something" is not a real failing test. The TDD loop's value comes from RED-GREEN-REFACTOR discipline, not from invented tests that pass on first run.
+
+**TDD cron state at end of Loop 29:**
+- Test suite: 22/22 pass
+- `game/ISSUES.md`: empty
+- `DECISIONS.md`: empty
+- `loop_state.json.tdd_cron.*` keys: absent (the queue has never been populated)
+- `loop_state.json.last_loop_status`: "idle"
+- `loop_state.json.total_loops_completed`: 29
+- `loop_state.json.last_loop_completed`: 2026-07-21T03:17:10+00:00
+
+**Options for the user (not for the agent to choose):**
+- **Populate the TDD queue.** The natural first tests, per §15.10 4-file seed expansion and §7 design, would be: (a) a determinism test for the §7.2 derived PRNG system, (b) a Tech + TechAugmentation data-model test, (c) an element grid + resistance test, (d) a status-effect engine test, (e) a form-change state-machine test, (f) a save/migration round-trip test. The agent authors one test per cron tick (30-min cycle). A queue of ~10-20 test ideas keeps the cron productive for the next 5-10 hours.
+- **Start the PoC (§15.4 10-day implementation order).** The PoC's first deliverable IS the test suite, so starting the PoC is also a way to populate the TDD queue naturally.
+- **End the TDD cron.** The tdd-cron has been idle 12 loops. If the project is not yet ready for TDD work, the cron can be suspended until the user is ready to begin implementation.
+
+**Why the agent does NOT auto-populate the test queue:**
+- The TDD cycle commits to "one test that fails for the right reason" (§9.4 of design doc). Inventing a test means writing code I expect to pass, which violates the RED-phase discipline.
+- A real test queue requires user intent: which subsystem first (combat? data? save/load?), what depth (PoC-level vs. Phase 1-level?), what scope (one failure mode per test, or combined assertions?).
+- The cron prompt's "Working set" section directs the agent to read `tdd_cron.test_queue` from `loop_state.json` — the queue is an *input*, not an *output*. Without it, the protocol's "pick the next test to author" step has nothing to pick.
+
+**Cross-cron status update (relevant if the user is reading the chat):**
+- Content cron (last 14 loops): idle, document is structurally complete
+- Data cron (per `data_cron` in `loop_state.json`): last data authored was `kidd.json` (2026-07-21T02:41:20+00:00)
+- TDD cron: idle 12 consecutive loops, awaiting queue
+- Decisions cron: nothing to decide (DECISIONS.md empty)
+
+**The cron loop's TDD role is idle. The next move is the user's.**
+
+## 2026-07-21 — Loop 30: TDD cron idle (13th consecutive idle)
+
+**What I did this loop:**
+- Read `cron-jobs/tdd-cron.md`, `loop_state.json`, tail of `loop_memory.md`, `game/ISSUES.md`, and ran the full test suite.
+- Test suite: 22/22 pass via `game/tools/run_tests.sh` (1.57s).
+- `game/ISSUES.md`: 1025 bytes of header/template only — no open or resolved bugs.
+- `loop_state.json`: still has no `tdd_cron` / `test_queue` / `current_test_focus` / `tests_passed` / `last_test_authored` keys. The TDD cron queue has never been populated.
+- No work authored. Logged idle in `loop_state.json` (incremented `total_loops_completed` to 30, set `last_loop_status: "idle"`, updated `last_loop_completed` to 2026-07-21T03:50:58+00:00).
+
+**Why idle is the correct action here (verbatim from the protocol):**
+> "If `tdd_cron.test_queue` is empty AND there are no ISSUES.md entries AND no failing tests: Log idle status in loop_state.json... Do not invent work. Idleness is correct behavior."
+
+All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR discipline, not from invented tests that pass on first run.
+
+**TDD cron state at end of Loop 30:**
+- Test suite: 22/22 pass
+- `game/ISSUES.md`: empty (no open issues, no resolved history)
+- `loop_state.json.tdd_cron.*` keys: absent (the queue has never been populated)
+- `loop_state.json.last_loop_status`: "idle"
+- `loop_state.json.total_loops_completed`: 30
+- `loop_state.json.last_loop_completed`: 2026-07-21T03:50:58+00:00
+
+**Options for the user (not for the agent to choose):**
+- **Populate the TDD queue.** Natural first tests, per §7 design + §15.10 4-file seed expansion: derived PRNG determinism, Tech + TechAugmentation data model, element grid + resistance, status-effect engine, form-change state machine, save/migration round-trip.
+- **Start the PoC (§15.4 10-day implementation order).** The PoC's first deliverable IS the test suite, so starting the PoC is also a way to populate the TDD queue naturally.
+- **End the TDD cron.** 13 idle loops — if the project is not yet ready for TDD work, the cron can be suspended until the user is ready to begin implementation.
+
+**Cross-cron status update:**
+- Content cron: idle, document complete (15/15 sections, 74,293 words)
+- Data cron: last data authored was `kidd.json` (loop 27, 2026-07-21T02:41:20+00:00) — active productive loop
+- TDD cron: idle 13 consecutive loops, awaiting queue
+- Decisions cron: nothing to decide (DECISIONS.md does not exist / empty)
+
+**The cron loop's TDD role is idle. The next move is the user's.**
