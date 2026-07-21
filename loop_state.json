@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T06:30:00+00:00",
-  "last_loop_completed": "2026-07-21T06:30:00+00:00",
-  "total_loops_completed": 35,
+  "last_updated": "2026-07-21T08:30:00+00:00",
+  "last_loop_completed": "2026-07-21T08:30:00+00:00",
+  "total_loops_completed": 36,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1115,27 +1115,23 @@
   "last_loop_status": "authored_test",
   "last_loop_action": "TDD cycle 34: authored 'test_determinism_prng_seeded' → 27/27 pass (commit 34aa84f). test_queue advanced to next item: test_character_data_loads",
   "data_cron": {
-    "last_data_authored": "nikki.json",
+    "last_data_authored": "glenn.json",
     "last_data_type": "character",
-    "last_data_run_at": "2026-07-21T04:30:00+00:00",
+    "last_data_run_at": "2026-07-21T08:30:00+00:00",
     "authored": {
       "characters": [
         "kidd",
         "serge",
-        "nikki"
+        "nikki",
+        "glenn"
       ],
       "elements": [],
       "maps": [],
       "chapters": []
     },
-    "last_status": "queued",
-    "last_action": "Planner populated target_queue (3 bases: Glenn, Herle, Norris); data-cron will pick queue[0]",
+    "last_status": "committed",
+    "last_action": "Cycle: authored character/glenn (4th base, 4/6 bases done) → validate_data.py 4/4 OK → commit 68e492c",
     "target_queue": [
-      {
-        "type": "character",
-        "id": "glenn",
-        "source": "phase_3_redesign.bases[3] — Glenn (Green), tier_1 'Dash and Gash', tier_8 'Sonic Sword', supports [Karsh, Razzly, Radius, Van, Sprigg, Turnup+NeoFio]"
-      },
       {
         "type": "character",
         "id": "herle",
@@ -1145,6 +1141,16 @@
         "type": "character",
         "id": "norris",
         "source": "phase_3_redesign.bases[5] — Norris (Yellow), tier_1 'Sunshower', tier_8 'Top Shot', supports [Sneff, Leah, Mel, Zoah, Viper, Funguy]"
+      },
+      {
+        "type": "element",
+        "id": "red_fireball",
+        "source": "phase_3_redesign.element_catalog.elements.Red[2] — Fireball (level 1±7, Single Enemy)"
+      },
+      {
+        "type": "element",
+        "id": "white_recoverall",
+        "source": "phase_3_redesign.element_catalog.elements.White[5] — RecoverAll (level 3±5, All Allies)"
       }
     ]
   },

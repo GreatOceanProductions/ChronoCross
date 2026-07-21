@@ -1195,3 +1195,53 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - Git: commit `8085a0d` on `main` (2 files changed, 214 insertions).
 
 **The TDD loop has produced its second authored test. The next loop (cycle 36) will pick `test_tech_data_loads` from the queue (§15.4 step 2).**
+---
+
+## Loop 36 — Data Authoring Cycle (data-cron)
+
+**Cycle:** 36
+**Date:** 2026-07-21T08:30:00+00:00
+**Job:** data-authoring-cron
+**Action:** Authored `game/data/characters/glenn.json` (4th of 6 bases)
+
+**Target pulled from `data_cron.target_queue[0]`:**
+- character/glenn
+- Source: `loop_state.json.phase_3_redesign.bases[3]`
+- Locked data: Glenn (Green), tier_1 "Dash and Gash", tier_8 "Sonic Sword", innate "combat" (§3.4: green=combat), supports Karsh/Razzly/Radius/Van/Sprigg/Turnup+NeoFio
+
+**Schema:** `character.schema.json` (existing — schema unchanged per hard constraint)
+
+**Mapping decisions (locked source → schema fields):**
+- `tier_1_tech: "Dash and Gash"` ← `bases[3].tier_1_tech`
+- `tier_8_tech: "Sonic Sword"` ← `bases[3].tier_8_tech`
+- `basic_attack: "Dash and Gash"` ← tier_1_tech also serves as the basic attack line (per §3.5: basic attack line scales with magic tiers; pattern matches existing serge/kidd/nikki files)
+- `innate: "combat"` ← §3.4 element-to-innate mapping (green→combat)
+- `support_slots` tier 1..6 ← `bases[3].supports[]` in declared order
+- Combined unit "Turnup+NeoFio" → `support_id: "turnup_neofio"` (lowercase snake_case per schema pattern `^[a-z][a-z0-9_]*$`; mirrors nikki.json's `korcha_macha` for "Korcha+Macha")
+- `level: 1` ← All existing bases start at level 1 (matches kidd/nikki/serge)
+- `sprite: ""`, `portrait: ""` ← Placeholder per §15.3 PoC scope
+
+**Validation:** `python game/tools/validate_data.py` → `4/4 files valid` (serge, kidd, nikki, glenn). No regressions.
+
+**Commit:** `68e492c` on main — "data: add character/glenn" (1 file, 21 insertions).
+
+**State updates (`loop_state.json`):**
+- `data_cron.last_data_authored: "glenn.json"`
+- `data_cron.last_data_run_at: "2026-07-21T08:30:00+00:00"`
+- `data_cron.authored.characters: ["kidd", "serge", "nikki", "glenn"]` (4/6 bases done)
+- `data_cron.target_queue` advanced: Glenn popped, Herle/Norris remain, plus 2 element entries seeded for the post-bases phase (red_fireball, white_recoverall)
+- `total_loops_completed: 35 → 36`
+- `last_updated` / `last_loop_completed`: 2026-07-21T08:30:00+00:00
+
+**Notes for future data-cron cycles:**
+- The combined-unit naming pattern is now established: `+` in the locked source maps to `_` in the schema id (Turnup+NeoFio → turnup_neofio, Korcha+Macha → korcha_macha, Leena+Poshul → leena_poshul). Future supports that are combined units should follow this convention.
+- The next two bases (Herle, Norris) follow the same pattern. After Herle/Norris, the queue switches to elements (red_fireball, white_recoverall). At that point the `data/elements/` directory and `element.schema.json` need to exist — that's a prerequisite for element authoring, separate from the data-cron job (it belongs to scaffolding-cron or a one-shot setup).
+- venv activation: `game/.venv/Scripts/python.exe` is the Python interpreter for validate_data.py. `uv pip install --python game/.venv/Scripts/python.exe` is how to add packages (jsonschema was already there; verified install path works for any future deps).
+- No ISSUES.md entries to resolve (file is clean).
+
+**Document state at end of this loop:**
+- `game/data/characters/`: 4 files (kidd, nikki, serge, glenn) — all schema-valid
+- `loop_state.json`: 36 loops completed; data-cron at 4/6 bases
+- Git: `68e492c` on main (data-cron only)
+
+**The data-cron is now halfway through the locked base roster. Next loop (37) will pick Herle from the queue.**
