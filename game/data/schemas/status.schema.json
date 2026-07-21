@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://remaster-engine.local/schemas/status.schema.json",
+  "title": "StatusEffect",
+  "description": "Schema for a single status effect in the Remaster Engine. v1.0.0: created per DEC-002 (8 canonical statuses). Per §7.5 of the design document.",
+  "type": "object",
+  "required": [
+    "id",
+    "display_name",
+    "category",
+    "max_stacks",
+    "duration",
+    "tick_phase",
+    "can_resist",
+    "resist_element",
+    "handlers"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "enum": ["sleep", "poison", "burn", "freeze", "confuse", "slow", "stop", "weaken"],
+      "description": "Status effect identifier. Per DEC-002, 8 canonical statuses. Matches the value used in tech.schema.json augmentation.status and effects.status."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Display name shown in UI."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["DETRIMENTAL", "BENEFICIAL"],
+      "description": "Whether the status hurts or helps the affected character. Detrimental statuses can be cleansed; beneficial cannot."
+    },
+    "max_stacks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99,
+      "default": 1,
+      "description": "Maximum stacks of this status that can be on a character simultaneously. e.g., poison=1 (single stack), but a hypothetical 'regen' could be 5 for stronger healing."
+    },
+    "duration": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Default duration in turns. 0 means 'until removed' (e.g., stop). Each tick decrements by 1; reaches 0 = removed. Some statuses (e.g., poison) may have an alternative tick model via tick_phase."
+    },
+    "tick_phase": {
+      "type": "string",
+      "enum": ["START_OF_TURN", "END_OF_TURN", "ON_DAMAGE_TAKEN", "ON_ACTION", "PASSIVE"],
+      "description": "When the status effect processes. START_OF_TURN: before the affected character's turn (e.g., poison damage). END_OF_TURN: after the affected character's turn (e.g., burn). ON_DAMAGE_TAKEN: triggers when affected takes damage (e.g., retaliate-style statuses). ON_ACTION: triggers when the affected tries to act (e.g., sleep check, stop). PASSIVE: no tick, just provides a flag (e.g., confuse's accuracy modifier)."
+    },
+    "can_resist": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the affected character can resist this status with their element's resist_element affinity."
+    },
+    "resist_element": {
+      "type": "string",
+      "enum": ["white", "red", "blue", "green", "yellow", "black", "neutral", "any"],
+      "description": "Which element resists this status. 'any' means the resist roll uses the affected character's own element. 'neutral' means no element resists. Per §7.5."
+    },
+    "handlers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["event"],
+        "additionalProperties": false,
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": ["ON_APPLY", "ON_TICK", "ON_REMOVE", "ON_TURN_START", "ON_TURN_END"],
+            "description": "When the handler fires."
+          },
+          "action": {
+            "type": "string",
+            "description": "The handler action. Format: <verb>:<target>. e.g., 'damage:hp:10', 'prevent:action', 'skip:turn', 'modify:accuracy:0.5'. Resolved by the StatusResolver at runtime."
+          }
+        }
+      },
+      "default": [],
+      "description": "List of handlers the status executes. e.g., poison might have ON_TICK/damage:hp:5 and ON_APPLY/announce. sleep has ON_TURN_START/prevent:action with chance roll."
+    }
+  }
+}

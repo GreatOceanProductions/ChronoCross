@@ -4,6 +4,14 @@
   "element": "black",
   "level": 1,
   "is_base": true,
+  "stats": {
+    "hp": 72,
+    "mp": 50,
+    "atk": 10,
+    "def": 7,
+    "spd": 11,
+    "mag": 18
+  },
   "basic_attack": "Moonshine",
   "tier_1_tech": "Moonshine",
   "tier_8_tech": "Lunairetic",

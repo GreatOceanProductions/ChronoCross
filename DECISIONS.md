@@ -1,7 +1,7 @@
 # Decisions — Implementation Phase
 
-This file is the batched review queue for the Remaster Engine implementation crons. 
-The crons surface questions here for you to answer. **Default suggested** means the 
+This file is the batched review queue for the Remaster Engine implementation crons.
+The crons surface questions here for you to answer. **Default suggested** means the
 cron will use that default and continue if you don't answer within 12 hours.
 
 **Format:**
@@ -27,41 +27,57 @@ cron will use that default and continue if you don't answer within 12 hours.
 
 ## Open Decisions
 
-- [ ] [P1] DEC-001: Element resistance chart: 6x6 default matrix | Filed: 2026-07-21T09:06:49.991126+00:00
-  - Context: The data-cron will need to author the 6x6 element resistance chart next (per spec section 7.4). The spec says it follows the original Chrono Cross chart with a hexagonal strong/weak graph (each element strong vs 2, weak vs 2, neutral vs 2 incl. self). The original chart is not perfectly canonical, and the redesign has a deliberate White-element introduction. Need to lock a default for the chart so the ElementGrid resource can be authored without blocking. Affects data/elements/resistances.json and the ElementGrid autoload.
-  - Options: A: Original CC chart (mod) | B: Symmetric placeholder (mirror pairs) - neutral 1.0, strong 0.5, weak 2.0 | C: Identical placeholder (all 1.0) - defensible default for v1
-  - Default: B: Symmetric placeholder (mirror pairs) - neutral 1.0, strong 0.5, weak 2.0
-
-- [ ] [P1] DEC-002: Status effect canonical list and IDs | Filed: 2026-07-21T09:06:55.695570+00:00
-  - Context: Spec section 7.5 defines the StatusEffect resource (id, display_name, category, max_stacks, duration, tick_phase, can_resist, resist_element, handlers). The tech schema already references status strings (e.g., sleep, poison per tech.schema.json). Before the TDD-cron authors the status effect engine, the canonical set of status IDs needs locking so the schema validator and tech augmentation references all agree.
-  - Options: A: 8 canonical statuses (sleep, poison, burn, freeze, confuse, slow, stop, weaken) | B: 12 statuses (8 + paralyze, stone, doom, blind) | C: Defer to status-engine TDD cycle - pick at authoring time
-  - Default: A: 8 canonical statuses (sleep, poison, burn, freeze, confuse, slow, stop, weaken)
-
-- [ ] [P1] DEC-003: Norris support tech tier interpretation | Filed: 2026-07-21T09:06:57.003926+00:00
-  - Context: The other 4 bases have support_slots with tier 1-6 (e.g., serge.json: leena_poshul@1, riddle@2, starky@3, steena@4, doc@5, angelic_pip@6). The locked level-based progression from spec 3.8 means: avg 1 slot at tier 1 (lvl 1), 2 at tier 1 (lvl 3), 2+1 at tiers 1-2 (lvl 5), 3+1 at tiers 1-2 (lvl 6), 3+2 at tiers 1-2 (lvl 7), 3+2+1 at tiers 1-3 (lvl 8), etc. The support_slots tier field in the JSONs is the cap the support occupies; the unlocked tier is gated by level. Confirm so data-cron does not refactor support_slots.
-  - Options: A: Confirm current interpretation - support_slots.tier = cap tier the support occupies, unlocked by level | B: support_slots.tier = exact level requirement for that support | C: Drop tier field - support augments as soon as recruited, level only controls elemental slots
-  - Default: A: Confirm current interpretation - support_slots.tier = cap tier the support occupies, unlocked by level
-
-- [ ] [P2] DEC-004: Stats block (HP, MP, Attack, Defense, Speed, Magic) - schema location | Filed: 2026-07-21T09:07:05.517301+00:00
-  - Context: CharacterData currently has no stats block - only name, element, level, innate, basic_attack, tier_1_tech, tier_8_tech, support_slots. The TechResolver takes attacker_attack as a runtime parameter (not from character data). Spec 7.10 combat engine needs each character stats. Decision: where do HP, MP, Atk, Def, Spd, Mag live? Affects combat-engine TDD cycle (next after action queue).
-  - Options: A: Extend character.schema.json (add hp/mp/atk/def/spd/mag fields, all integers) | B: Separate stat_block.json files (1:1 with characters) referenced by id | C: Compute at runtime from level + element + innate + class (no stored stats)
-  - Default: A: Extend character.schema.json (add hp/mp/atk/def/spd/mag fields, all integers)
-
-- [ ] [P2] DEC-005: White element innate role (Serge has innate=none - confirm or assign) | Filed: 2026-07-21T09:07:06.827910+00:00
-  - Context: Character schema enum for innate is [steal, performance, combat, dark, healer, none]. Spec 3.4 maps red=steal, blue=performance, green=combat, black=dark, yellow=healer. White is not assigned an innate in the spec - Serge is the player. Existing serge.json has innate=none. Decision: keep white=none as player-anchor default, or assign a 6th innate (e.g., leader, light, summoner)? Affects how augmentation engine treats Serge techs vs all other bases.
-  - Options: A: Keep white=none (player-anchor; no special innate treatment) | B: Add leader to enum (e.g., boosts adjacent row stats) | C: Add light to enum (mirrors black dark but for White element)
-  - Default: A: Keep white=none (player-anchor; no special innate treatment)
-
-- [ ] [P2] DEC-006: Element file naming and topology (8 elements vs 6 base) | Filed: 2026-07-21T09:07:09.149719+00:00
-  - Context: Phase 3 redesign element_catalog has 6 base elements (Red, Blue, Green, White, Black, Yellow) plus Chrono Cross special (Time Egg etc., not in visible portion of loop_state.json). The locked design commits to 6 elements for the redesign. The data/elements/ directory does not exist yet, and data-cron target_queue has red_fireball and white_recoverall as first two element entries. Question: do we need Chrono Cross special element files, or strictly the 6 locked elements?
-  - Options: A: 6 base elements only (locked design commitment) | B: 6 base + Chrono Cross special as a 7th element file (optional, can be empty initially) | C: Defer - create the 6 base element files first, add Chrono Cross special when needed
-  - Default: A: 6 base elements only (locked design commitment)
-
-- [ ] [P1] DEC-007: Augmentation chain walk order and idempotency | Filed: 2026-07-21T09:11:06.461740+00:00
-  - Context: Spec section 7.10 step 2 says 'The simulator walks the tech's augmentations list. Pre-damage augmentations apply (status pre-applications, MP discounts, self-buffs).' The augmentation chain walk is the heart of the section 3.5 augmentation model. Before the TDD-cron authors the augmentation chain test, the chain-walk semantics need locking: (1) Are augmentations applied in array order or by some priority field? (2) Can an augmentation cancel the damage step (e.g., MP-discount that makes the tech fail)? (3) Are pre-damage and post-damage augmentations in the same list with a phase field, or in separate lists? Affects test_tech_resolver_augmentation_chain (the next TDD cycle after ActionQueue) and the TechData/TechAugmentation schema. Blocks the upcoming TDD cycle if not resolved.
-  - Options: A: Single list, ordered, with phase field (pre/post) on each augmentation | B: Two separate lists (pre_augmentations, post_augmentations) on the tech | C: Single list ordered; the resolver infers pre vs post from augmentation kind
-  - Default: A: Single list, ordered, with phase field (pre/post) on each augmentation
+_(none currently)_
 
 ## Resolved Decisions
 
-_(none yet)_
+- [x] [P1] DEC-001: Element resistance chart: 6x6 default matrix | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: Mirrored pairs (option B). Neutral 1.0, strong 0.5, weak 2.0. Affects data/elements/resistances.json and ElementGrid autoload. With DEC-006's resolution, this becomes 7x7 (adding neutral as a 7th element).
+
+- [x] [P1] DEC-002: Status effect canonical list and IDs | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: 8 canonical statuses (option A): sleep, poison, burn, freeze, confuse, slow, stop, weaken. Used by tech schema, StatusEffect resource, and TechResolver.
+
+- [x] [P1] DEC-003: Norris support tech tier interpretation | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: Supports have a 3-tech story-driven unlock progression (NOT just level-based). Each support unlocks 3 techs at story scenes: (1) canon recruitment scene → first tech (tier 2 or 3, prioritizing 3 for late recruits, 2 for early); (2) canon storyline scene → second tech (tier 4 for early recruits, 5 for late); (3) canon final tech/equipment scene → third tech (tier 6 for early recruits, 7 for late). This is RICHER than the level-based tier system. The support_slots.tier field needs to be refactored: it should hold an array of 3 entries, each with {scene_id, tech_id, tier}.
+  - **Follow-up:** DEC-003a filed (see Open Decisions) to lock the exact support_slots schema.
+
+- [x] [P2] DEC-004: Stats block (HP, MP, Attack, Defense, Speed, Magic) - schema location | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: Extend character.schema.json (option A). Add hp/mp/atk/def/spd/mag fields, all integers, required at base level. Runtime scaling (per level) handled by StatResolver autoload.
+
+- [x] [P2] DEC-005: White element innate role (Serge has innate=none - confirm or assign) | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: NO canon character has an innate feature. Innates come from EQUIPMENT, not from elements. Kid's "steal" comes from her tier 1 tech (pilfer), not from her innate. This means the `innate` field on CharacterData may be vestigial. Recommend removing the field from the schema, OR repurposing it to "innate_source: equipment | tech | none" (where it documents where this character gets its innates from).
+  - **Follow-up:** DEC-005a filed (see Open Decisions) to choose between vestigial removal or repurposing.
+
+- [x] [P2] DEC-006: Element file naming and topology (8 elements vs 6 base) | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: 7 elements total. Six base (red, blue, green, yellow, white, black) plus NEUTRAL as the 7th. Neutral is the default for any physical/non-elemental ability and for Chrono Cross specials (Time Egg etc.). Neutral damage is 1.0 flat. The 6x6 resistance matrix from DEC-001 becomes 7x7 with neutral as a 7th row/column.
+
+- [x] [P1] DEC-007: Augmentation chain walk order and idempotency | Filed: 2026-07-21 | Resolved: 2026-07-21
+  - Resolution: Single ordered list with phase field (option A). Each augmentation has {kind, phase: pre|post, params}. Resolver walks the list in array order, applying pre-phase augmentations before damage step and post-phase augmentations after. Pre-augmentations can cancel the damage step (return early). Idempotency rule: each (kind, params_hash) augmentation is applied at most once per tech cast.
+
+---
+
+## Open Decisions (Round 2)
+
+- [ ] [P1] DEC-003a: support_slots schema refactor (3-scene unlock) | Filed: 2026-07-21
+  - Context: DEC-003's resolution reveals that support_slots cannot be a single {support_id, tier} pair. Each support has 3 unlocks, each tied to a story scene. Need to lock the new schema before any support data files are authored. Affects all 36 supports across 6 bases.
+  - Options:
+    A: support_slots: [{support_id, unlocks: [{scene_id, tech_id, tier, level_required?}]}] — array of 3 unlocks per support
+    B: support_slots: [{support_id, first_unlock: {scene_id, tech_id, tier}, second_unlock: {...}, third_unlock: {...}}] — named slots
+    C: support_slots: [{support_id, scene_progression: {recruitment: {tech_id, tier}, story: {tech_id, tier}, final: {tech_id, tier}}}] — semantic slot names
+  - Default: C: semantic slot names (recruitment/story/final) — most readable, matches the user's prose
+
+- [ ] [P2] DEC-005a: innate field — remove or repurpose? | Filed: 2026-07-21
+  - Context: DEC-005's resolution says no canon character has an innate; innates come from equipment. The current `innate` field on CharacterData is misleading. Need to decide what to do with it.
+  - Options:
+    A: Remove `innate` field entirely from schema. Document that innates are equipment-driven in a separate EquipmentData resource.
+    B: Repurpose `innate` to `innate_source: enum [equipment, tech, none]`. Still on character but describes where innates come from, not what they are.
+    C: Keep `innate` as an enum but make it optional and rare. Most characters have `innate=none`. A few outliers have something specific (e.g., Serge = "white_leader" if we want him to be the player anchor).
+  - Default: A: remove entirely. EquipmentData is the cleaner abstraction. Updating the schema is mechanical; the data is regenerated.
+
+- [ ] [P1] DEC-008: element_id enum expansion (add "neutral") | Filed: 2026-07-21
+  - Context: DEC-006's resolution added a 7th element: neutral. The character.schema.json, tech.schema.json, and element files all reference element IDs as enums. These enums need to be updated to include "neutral". Affects 3+ schema files and 1 element file. Should be a quick patch.
+  - Options:
+    A: Add "neutral" to all element_id enums. Mechanical change. Run the validator, fix any character JSONs that reference the old 6-element set.
+    B: Make element_id a free-form string with validation against a known-elements list. More flexible for future special elements (Time Egg, etc.).
+    C: Defer until a neutral-element character/tech is authored. Until then, no schema change needed.
+  - Default: A: add "neutral" to enums now. Quick, mechanical, prevents future blockers.

@@ -4,6 +4,14 @@
   "element": "green",
   "level": 1,
   "is_base": true,
+  "stats": {
+    "hp": 95,
+    "mp": 25,
+    "atk": 15,
+    "def": 13,
+    "spd": 9,
+    "mag": 6
+  },
   "basic_attack": "Dash and Gash",
   "tier_1_tech": "Dash and Gash",
   "tier_8_tech": "Sonic Sword",

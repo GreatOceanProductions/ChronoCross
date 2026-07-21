@@ -4,6 +4,14 @@
   "element": "red",
   "level": 1,
   "is_base": true,
+  "stats": {
+    "hp": 75,
+    "mp": 35,
+    "atk": 11,
+    "def": 9,
+    "spd": 12,
+    "mag": 10
+  },
   "basic_attack": "Red Pin",
   "tier_1_tech": "Red Pin",
   "tier_8_tech": "Hotshot",

@@ -4,6 +4,14 @@
   "element": "white",
   "level": 1,
   "is_base": true,
+  "stats": {
+    "hp": 80,
+    "mp": 30,
+    "atk": 12,
+    "def": 10,
+    "spd": 10,
+    "mag": 8
+  },
   "basic_attack": "Dash and Slash",
   "tier_1_tech": "Dash and Slash",
   "tier_8_tech": "Glide Hook",

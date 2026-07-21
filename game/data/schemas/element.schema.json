@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://remaster-engine.local/schemas/element.schema.json",
+  "title": "ElementData",
+  "description": "Schema for a single element in the Remaster Engine. v1.0.0: created per DEC-001/006/008 (7 elements: 6 color + neutral). Per §7.4 of the design document.",
+  "type": "object",
+  "required": ["id", "display_name", "color_hex", "resistances"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "enum": ["white", "red", "blue", "green", "yellow", "black", "neutral"],
+      "description": "Element identifier. 7 elements per DEC-006: 6 color + 'neutral' (the 7th, for physical/non-elemental abilities and Chrono Cross specials)."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "Display name shown in UI. e.g., 'White', 'Red', 'Neutral'."
+    },
+    "color_hex": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Hex color for UI rendering. e.g., '#FFFFFF' for white, '#FF0000' for red, '#808080' for neutral."
+    },
+    "base_damage_type": {
+      "type": "string",
+      "enum": ["magic", "physical", "true"],
+      "default": "magic",
+      "description": "How the element's damage is computed. magic = scales with mag stat. physical = scales with atk stat. true = ignores defense."
+    },
+    "resistances": {
+      "type": "object",
+      "description": "Resistance map: from this element's attacks to each target element. Per DEC-001, default is mirrored pairs: strong vs 2 = 0.5 multiplier, weak vs 2 = 2.0 multiplier, neutral vs 2 (incl. self) = 1.0. Neutral element has all 1.0 (no special interaction).",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 4.0
+      },
+      "properties": {
+        "white": {"type": "number", "minimum": 0.0, "maximum": 4.0},
+        "red": {"type": "number", "minimum": 0.0, "maximum": 4.0},
+        "blue": {"type": "number", "minimum": 0.0, "maximum": 4.0},
+        "green": {"type": "number", "minimum": 0.0, "maximum": 4.0},
+        "yellow": {"type": "number", "minimum": 0.0, "maximum": 4.0},
+        "black": {"type": "number", "minimum": 0.0, "maximum": 4.0},
+        "neutral": {"type": "number", "minimum": 0.0, "maximum": 4.0}
+      }
+    }
+  }
+}
