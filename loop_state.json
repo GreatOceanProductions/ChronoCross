@@ -2,9 +2,9 @@
   "project": "Remaster Engine Design Spec",
   "version": "0.1.0",
   "started": "2026-07-19",
-  "last_updated": "2026-07-21T08:29:46.294254+00:00",
-  "last_loop_completed": "2026-07-21T08:29:46.294254+00:00",
-  "total_loops_completed": 39,
+  "last_updated": "2026-07-21T08:51:44+00:00",
+  "last_loop_completed": "2026-07-21T08:51:44+00:00",
+  "total_loops_completed": 40,
   "document_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.md",
   "word_output_path": "D:\\Game Design\\Remaster Engine\\remaster_engine_design_spec.docx",
   "review_path": "D:\\Game Design\\Remaster Engine\\review.md",
@@ -1115,22 +1115,23 @@
   "last_loop_status": "authored_test",
   "last_loop_action": "TDD cycle 6: authored test_party_manager_active_roster -> 53/53 pass. test_queue advanced to next item: test_tech_resolver_basic_attack",
   "data_cron": {
-    "last_data_authored": "glenn.json",
+    "last_data_authored": "herle.json",
     "last_data_type": "character",
-    "last_data_run_at": "2026-07-21T08:30:00+00:00",
+    "last_data_run_at": "2026-07-21T08:51:44+00:00",
     "authored": {
       "characters": [
         "kidd",
         "serge",
         "nikki",
-        "glenn"
+        "glenn",
+        "herle"
       ],
       "elements": [],
       "maps": [],
       "chapters": []
     },
     "last_status": "committed",
-    "last_action": "Cycle: authored character/glenn (4th base, 4/6 bases done) → validate_data.py 4/4 OK → commit 68e492c",
+    "last_action": "Cycle: authored character/herle (5th base, 5/6 bases done) -> validate_data.py 6/6 OK -> commit 689d406",
     "target_queue": [
       {
         "type": "character",
