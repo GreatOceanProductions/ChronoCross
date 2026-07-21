@@ -1245,3 +1245,9 @@ All three conditions hold. The TDD loop's value comes from RED-GREEN-REFACTOR di
 - Git: `68e492c` on main (data-cron only)
 
 **The data-cron is now halfway through the locked base roster. Next loop (37) will pick Herle from the queue.**
+
+## Snapshot tick 37 (2026-07-21T07:05Z)
+- state-07 created (347K, replaces state-00 from 2026-07-21T01:04Z). Ring 8/8.
+- 1 commit `e8fdd0c` made (state-07 + CharacterData.gd + 2 godot test wrappers) and pushed; 11 unpushed commits in total (d90ef8c..e8fdd0c) — all pushed to origin/main.
+- snapshot_cron.last_push updated to e8fdd0c / 11 commits / 2026-07-21T07:05:55Z.
+
